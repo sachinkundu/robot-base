@@ -96,11 +96,13 @@ void loop() {
 
    delay(50); // Makes the output readable
 
-   /* To-do: 
+  /* To-do: 
       
     - Implement motor power scaling for physical hardware.
       The calculated motor powers need to be converted to a suitable range (e.g., 0-10V)
-      for motor controller inputs, possibly using a DAC (Digital-to-Analog Converter).*/
+      for motor controller inputs, possibly using a DAC (Digital-to-Analog Converter).
+    
+  */
   }
 
 }
