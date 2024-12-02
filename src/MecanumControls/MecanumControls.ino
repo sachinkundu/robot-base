@@ -1,12 +1,10 @@
-/*
-  Arduino code to read Xbox 360 controller inputs and control mecanum wheels.
-*/
+// Arduino program to read Xbox 360 controller inputs and control mecanum wheels.
 
-
-// the necessary libraries
+//Include the necessary libraries
 #include <XBOXUSB.h>
 #include <SPI.h>
 
+// Initialize USB and Xbox controller objects
 USB Usb;
 XBOXUSB Xbox(&Usb);
 
@@ -49,9 +47,9 @@ void loop() {
     if (abs(yNorm) < DEADZONE) yNorm = 0;
     if (abs(turnNorm) < DEADZONE) turnNorm = 0;
 
-    // angle of joystick vector
+    // calculate the angle of joystick vector
     float theta = atan2(yNorm, xNorm);
-    //  magnitude of joystick vector
+    // calculate the magnitude of joystick vector
     float power = hypot(xNorm, yNorm);
 
     // adjust theta by 45deg (PI/4 radians) to align with wheel axes.
