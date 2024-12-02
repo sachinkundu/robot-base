@@ -1,6 +1,5 @@
 /*
-  Arduino code to read Xbox 360 controller inputs and  mecanum wheel control.
-  Outputs motor powers through Serial for simulation.
+  Arduino code to read Xbox 360 controller inputs and control mecanum wheels.
 */
 
 
@@ -97,7 +96,11 @@ void loop() {
 
    delay(50); // Makes the output readable
 
-   /* To-do: scale the motor power values to 0-10V (through DAC?) to the analog input of the motors*/
+   /* To-do: 
+      
+    - Implement motor power scaling for physical hardware.
+      The calculated motor powers need to be converted to a suitable range (e.g., 0-10V)
+      for motor controller inputs, possibly using a DAC (Digital-to-Analog Converter).*/
   }
 
 }
