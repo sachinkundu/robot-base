@@ -9,11 +9,6 @@ const int rightFrontDirPin = 4;
 const int leftRearDirPin = 7;
 const int rightRearDirPin = 8;
 
-// Direction constants for each motor
-const int LEFT_FRONT_DIR = 1;  // Forward = Clockwise
-const int RIGHT_FRONT_DIR = -1; // Forward = Counter-clockwise
-const int LEFT_REAR_DIR = 1;   // Forward = Clockwise
-const int RIGHT_REAR_DIR = -1; // Forward = Counter-clockwise
 
 // Initialize USB object
 USB Usb;
@@ -26,20 +21,25 @@ MecanumControl drive;
 Adafruit_MCP4728 mcp;
 
 // Function to set motor direction and output analog voltage
-void setMotor(int dirPin, float motorValue, uint8_t channel, int directionMultiplier) {
-  // Adjust motor value based on direction
-  float adjustedMotorValue = motorValue * directionMultiplier;
-
+void setMotor(int dirPin, float motorValue, uint8_t channel) {
   // Compute DAC value (scaled to 0-4095)
-  int dacValue = abs(adjustedMotorValue * 4095); // Scale [-1, 1] to [0, 4095]
-  dacValue = constrain(dacValue, 0, 4095);       // Ensure within DAC range
+  int dacValue = abs(motorValue * 4095); // Scale [-1, 1] to [0, 4095]
+  dacValue = constrain(dacValue, 0, 4095);
 
-  // Set direction based on the sign of the adjusted motor value
-  if (adjustedMotorValue >= 0) {
-    digitalWrite(dirPin, HIGH); // Forward
+  // Adjust direction logic: HIGH = CCW, LOW = CW
+  if (motorValue >= 0) {
+    digitalWrite(dirPin, LOW);
   } else {
-    digitalWrite(dirPin, LOW);  // Backward
+    digitalWrite(dirPin, HIGH); 
   }
+
+  // Simulate DAC output for debugging
+  Serial.print("Channel ");
+  Serial.print(channel);
+  Serial.print(": Dir=");
+  Serial.print(motorValue >= 0 ? "Forward (CW)" : "Backward (CCW)");
+  Serial.print(", Value=");
+  Serial.println(dacValue);
 
   // Set the corresponding MCP4728 channel output
   mcp.setChannelValue(channel, dacValue);
