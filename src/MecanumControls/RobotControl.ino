@@ -1,24 +1,73 @@
-// Include the necessary libraries
 #include <SPI.h>
+#include <Adafruit_MCP4728.h>
 #include "XboxController.h"
 #include "MecanumControl.h"
+
+// Motor driver pins for direction
+const int leftFrontDirPin = 2;
+const int rightFrontDirPin = 4;
+const int leftRearDirPin = 7;
+const int rightRearDirPin = 8;
+
+// Direction constants for each motor
+const int LEFT_FRONT_DIR = 1;  // Forward = Clockwise
+const int RIGHT_FRONT_DIR = -1; // Forward = Counter-clockwise
+const int LEFT_REAR_DIR = 1;   // Forward = Clockwise
+const int RIGHT_REAR_DIR = -1; // Forward = Counter-clockwise
 
 // Initialize USB object
 USB Usb;
 
-// Create instances of the XboxController and MecanumControl classes
+// Create instances of XboxController and MecanumControl
 XboxController xbox(&Usb);
 MecanumControl drive;
 
+// Initialize MCP4728 DAC
+Adafruit_MCP4728 mcp;
+
+// Function to set motor direction and output analog voltage
+void setMotor(int dirPin, float motorValue, uint8_t channel, int directionMultiplier) {
+  // Adjust motor value based on direction
+  float adjustedMotorValue = motorValue * directionMultiplier;
+
+  // Compute DAC value (scaled to 0-4095)
+  int dacValue = abs(adjustedMotorValue * 4095); // Scale [-1, 1] to [0, 4095]
+  dacValue = constrain(dacValue, 0, 4095);       // Ensure within DAC range
+
+  // Set direction based on the sign of the adjusted motor value
+  if (adjustedMotorValue >= 0) {
+    digitalWrite(dirPin, HIGH); // Forward
+  } else {
+    digitalWrite(dirPin, LOW);  // Backward
+  }
+
+  // Set the corresponding MCP4728 channel output
+  mcp.setChannelValue(channel, dacValue);
+}
+
 void setup() {
   Serial.begin(115200);
-  while (!Serial); // Wait for serial port to connect
+  while (!Serial); // Wait for serial connection
 
   if (Usb.Init() == -1) {
-    Serial.print(F("\nDid not start"));
-    while (1); // Stop if USB initialization fails
+    Serial.println(F("USB initialization failed!"));
+    while (1);
   }
-  Serial.println(F("\nXBOX USB Library Started"));
+  Serial.println(F("XBOX USB Library Started"));
+
+  // Initialize MCP4728 DAC
+  if (!mcp.begin()) {
+    Serial.println(F("Failed to initialize MCP4728!"));
+    while (1);
+  }
+
+  // Set direction pins as outputs
+  pinMode(leftFrontDirPin, OUTPUT);
+  pinMode(rightFrontDirPin, OUTPUT);
+  pinMode(leftRearDirPin, OUTPUT);
+  pinMode(rightRearDirPin, OUTPUT);
+
+  Serial.println(F("Setup complete"));
 }
 
 void loop() {
@@ -35,28 +84,12 @@ void loop() {
     // Calculate motor powers
     drive.calculateMotorPowers(x, y, turn);
 
-    // Get motor powers
-    float leftFront = drive.getLeftFront();
-    float rightFront = drive.getRightFront();
-    float leftRear = drive.getLeftRear();
-    float rightRear = drive.getRightRear();
+    // Set motor directions and DAC outputs
+    setMotor(leftFrontDirPin, drive.getLeftFront(), MCP4728_CHANNEL_A, LEFT_FRONT_DIR);
+    setMotor(rightFrontDirPin, drive.getRightFront(), MCP4728_CHANNEL_B, RIGHT_FRONT_DIR);
+    setMotor(leftRearDirPin, drive.getLeftRear(), MCP4728_CHANNEL_C, LEFT_REAR_DIR);
+    setMotor(rightRearDirPin, drive.getRightRear(), MCP4728_CHANNEL_D, RIGHT_REAR_DIR);
 
-    // Output motor powers through serial for testing
-    Serial.print("Left Front: ");
-    Serial.print(leftFront, 4); // Prints 4 decimals
-    Serial.print("\tRight Front: ");
-    Serial.print(rightFront, 4);
-    Serial.print("\tLeft Rear: ");
-    Serial.print(leftRear, 4);
-    Serial.print("\tRight Rear: ");
-    Serial.println(rightRear, 4);
-
-    delay(50); // Makes the output readable
-
-    /* To-do:
-      - Implement motor power scaling for physical hardware.
-        The calculated motor powers need to be converted to a suitable range (e.g., 0-10V)
-        for motor controller inputs, possibly using a DAC (Digital-to-Analog Converter).
-    */
+    
   }
 }
