@@ -33,13 +33,14 @@ void setMotor(int dirPin, float motorValue, uint8_t channel) {
     digitalWrite(dirPin, HIGH); 
   }
 
-  // Simulate DAC output for debugging
+  /* Simulate DAC output for debugging
   Serial.print("Channel ");
   Serial.print(channel);
   Serial.print(": Dir=");
   Serial.print(motorValue >= 0 ? "Forward (CW)" : "Backward (CCW)");
   Serial.print(", Value=");
   Serial.println(dacValue);
+  */
 
   // Set the corresponding MCP4728 channel output
   mcp.setChannelValue(channel, dacValue);
@@ -51,7 +52,7 @@ void setup() {
 
   if (Usb.Init() == -1) {
     Serial.println(F("USB initialization failed!"));
-    while (1);
+    while (true);
   }
   Serial.println(F("XBOX USB Library Started"));
 
@@ -85,10 +86,10 @@ void loop() {
     drive.calculateMotorPowers(x, y, turn);
 
     // Set motor directions and DAC outputs
-    setMotor(leftFrontDirPin, drive.getLeftFront(), MCP4728_CHANNEL_A, LEFT_FRONT_DIR);
-    setMotor(rightFrontDirPin, drive.getRightFront(), MCP4728_CHANNEL_B, RIGHT_FRONT_DIR);
-    setMotor(leftRearDirPin, drive.getLeftRear(), MCP4728_CHANNEL_C, LEFT_REAR_DIR);
-    setMotor(rightRearDirPin, drive.getRightRear(), MCP4728_CHANNEL_D, RIGHT_REAR_DIR);
+    setMotor(leftFrontDirPin, drive.getLeftFront(), MCP4728_CHANNEL_A);
+    setMotor(rightFrontDirPin, drive.getRightFront(), MCP4728_CHANNEL_B);
+    setMotor(leftRearDirPin, drive.getLeftRear(), MCP4728_CHANNEL_C);
+    setMotor(rightRearDirPin, drive.getRightRear(), MCP4728_CHANNEL_D);
 
     
   }
