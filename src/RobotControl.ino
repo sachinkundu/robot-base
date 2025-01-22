@@ -9,7 +9,6 @@ const int rightFrontDirPin = 4;
 const int leftRearDirPin = 7;
 const int rightRearDirPin = 8;
 
-
 // Initialize USB object
 USB Usb;
 
@@ -22,25 +21,13 @@ Adafruit_MCP4728 mcp;
 
 // Function to set motor direction and output analog voltage
 void setMotor(int dirPin, float motorValue, uint8_t channel) {
-  // Compute DAC value (scaled to 0-4095)
-  int dacValue = abs(motorValue * 4095); // Scale [-1, 1] to [0, 4095]
+  
+  // Scale [-1, 1] to [0, 4095]
+  int dacValue = abs(motorValue * 4095);
   dacValue = constrain(dacValue, 0, 4095);
 
-  // Adjust direction logic: HIGH = CCW, LOW = CW
-  if (motorValue >= 0) {
-    digitalWrite(dirPin, LOW);
-  } else {
-    digitalWrite(dirPin, HIGH); 
-  }
-
-  /* Simulate DAC output for debugging
-  Serial.print("Channel ");
-  Serial.print(channel);
-  Serial.print(": Dir=");
-  Serial.print(motorValue >= 0 ? "Forward (CW)" : "Backward (CCW)");
-  Serial.print(", Value=");
-  Serial.println(dacValue);
-  */
+  // Set direction: HIGH = CCW, LOW = CW
+  digitalWrite(dirPin, motorValue >= 0 ? LOW : HIGH);
 
   // Set the corresponding MCP4728 channel output
   mcp.setChannelValue(channel, dacValue);
@@ -52,7 +39,7 @@ void setup() {
 
   if (Usb.Init() == -1) {
     Serial.println(F("USB initialization failed!"));
-    while (true);
+    while (1);
   }
   Serial.println(F("XBOX USB Library Started"));
 
@@ -85,12 +72,22 @@ void loop() {
     // Calculate motor powers
     drive.calculateMotorPowers(x, y, turn);
 
-    // Set motor directions and DAC outputs
-    setMotor(leftFrontDirPin, drive.getLeftFront(), MCP4728_CHANNEL_A);
+    // Set motor directions and DAC outputs, inverts the left motor direction.
+    setMotor(leftFrontDirPin, -drive.getLeftFront(), MCP4728_CHANNEL_A);
     setMotor(rightFrontDirPin, drive.getRightFront(), MCP4728_CHANNEL_B);
-    setMotor(leftRearDirPin, drive.getLeftRear(), MCP4728_CHANNEL_C);
+    setMotor(leftRearDirPin, -drive.getLeftRear(), MCP4728_CHANNEL_C);
     setMotor(rightRearDirPin, drive.getRightRear(), MCP4728_CHANNEL_D);
 
-    
+    /*
+     //Serial output for debugging
+    Serial.print("LF: ");
+    Serial.print(drive.getLeftFront(), 4);
+    Serial.print("\tRF: ");
+    Serial.print(drive.getRightFront(), 4);
+    Serial.print("\tLR: ");
+    Serial.print(drive.getLeftRear(), 4);
+    Serial.print("\tRR: ");
+    Serial.println(drive.getRightRear(), 4);
+    */
   }
 }
