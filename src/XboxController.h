@@ -49,6 +49,11 @@ public:
     return turnNorm;
   }
 
+  //Get left trigger value
+  uint8_t getLT() {
+    return Xbox.getButtonPress(LT);
+  }
+
 private:
   XBOXUSB Xbox;
   float xNorm = 0;

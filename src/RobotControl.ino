@@ -61,33 +61,41 @@ void setup() {
 void loop() {
   Usb.Task();
 
+  // Check if Xbox controller is connected
   if (xbox.isConnected()) {
     xbox.update();
 
-    // Get joystick inputs
-    float x = xbox.getX();
-    float y = xbox.getY();
-    float turn = xbox.getTurn();
+    // Initialize joystick values
+    float x = 0;
+    float y = 0;
+    float turn = 0;
 
-    // Calculate motor powers
+    // If LT is pressed fully (255), get joystick inputs
+    if (xbox.getLT() == 255) {
+      x = xbox.getX();
+      y = xbox.getY();
+      turn = xbox.getTurn();
+    }
+
+    // Calculate motor powers based on joystick inputs (zero if LT is not pressed)
     drive.calculateMotorPowers(x, y, turn);
 
-    // Set motor directions and DAC outputs, inverts the left motor direction.
+    // Set motor directions and DAC outputs, invert the left motor direction
     setMotor(leftFrontDirPin, -drive.getLeftFront(), MCP4728_CHANNEL_A);
     setMotor(rightFrontDirPin, drive.getRightFront(), MCP4728_CHANNEL_B);
     setMotor(leftRearDirPin, -drive.getLeftRear(), MCP4728_CHANNEL_C);
     setMotor(rightRearDirPin, drive.getRightRear(), MCP4728_CHANNEL_D);
-
-    /*
-     //Serial output for debugging
-    Serial.print("LF: ");
-    Serial.print(drive.getLeftFront(), 4);
-    Serial.print("\tRF: ");
-    Serial.print(drive.getRightFront(), 4);
-    Serial.print("\tLR: ");
-    Serial.print(drive.getLeftRear(), 4);
-    Serial.print("\tRR: ");
-    Serial.println(drive.getRightRear(), 4);
-    */
   }
+  
+  /*
+  //Serial output for debugging
+  Serial.print("LF: ");
+  Serial.print(drive.getLeftFront(), 4);
+  Serial.print("\tRF: ");
+  Serial.print(drive.getRightFront(), 4);
+  Serial.print("\tLR: ");
+  Serial.print(drive.getLeftRear(), 4);
+  Serial.print("\tRR: ");
+  Serial.println(drive.getRightRear(), 4);
+  */
 }
