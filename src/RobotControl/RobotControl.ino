@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <HardwareSerial.h> // Ensure Serial is defined
 #include "XboxController.h"
 #include "MecanumControl.h"
 #include "DebugMenu.h"
@@ -8,13 +9,10 @@ bool printingEnabled = false; // Flag for serial printing
 unsigned long lastPrintTime = 0; // Tracks the last time values were printed
 const unsigned long printInterval = 1000; // Interval for printing in milliseconds (1 second)
 
-// Initialize USB object
 USB Usb;
 
-// Create instances of XboxController and MecanumControl
 XboxController xbox(&Usb);
-// Create an instance of MecanumControl
-MecanumDrive mecanumControl;
+MecanumDrive mecanumDrive;
 
 void setup() {
   Serial.begin(115200);
@@ -62,7 +60,7 @@ void loop() {
   if (!setupComplete) {
     if (waitForXboxCenterButton()) {
       // Initialize MecanumControl after the button is held
-      if (!mecanumControl.initialize()) {
+      if (!mecanumDrive.initialize()) {
         Serial.println(F("Failed to initialize MecanumControl!"));
         while (1);
       }
@@ -80,7 +78,7 @@ void loop() {
   if (Serial.available()) {
     char command = Serial.read();
     if (command == 'd') {
-      enterDebugMode(mecanumControl, xbox);
+      enterDebugMode(mecanumDrive, xbox);
     } else if (command == 'p') {
       printingEnabled = !printingEnabled; // Toggle printingEnabled flag
       if (printingEnabled) {
@@ -105,15 +103,15 @@ void loop() {
     }
 
     // Enable motors and drive
-    mecanumControl.enableMotors();
+    mecanumDrive.enableMotors();
     x = xbox.getX();
     y = xbox.getY();
     turn = xbox.getTurn();
-    mecanumControl.move(x, y, turn);
+    mecanumDrive.move(x, y, turn);
 
   } else {
     // Disable motors
-    mecanumControl.disableMotors();
+    mecanumDrive.disableMotors();
   }
 
   // Serial output for debugging
