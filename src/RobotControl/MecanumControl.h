@@ -2,75 +2,124 @@
 #define MECANUMCONTROL_H
 
 #include <Arduino.h>
+#include <Adafruit_MCP4728.h>
 
 class MecanumControl {
 public:
+  // Constructor
+  MecanumControl(int lfDirPin, int rfDirPin, int lrDirPin, int rrDirPin,
+                 int lfEnablePin, int rfEnablePin, int lrEnablePin, int rrEnablePin)
+      : leftFrontDirPin(lfDirPin), rightFrontDirPin(rfDirPin),
+        leftRearDirPin(lrDirPin), rightRearDirPin(rrDirPin),
+        leftFrontEnablePin(lfEnablePin), rightFrontEnablePin(rfEnablePin),
+        leftRearEnablePin(lrEnablePin), rightRearEnablePin(rrEnablePin) {}
+
+  // Initialize the DAC and motor pins
+  bool initialize() {
+    if (!dac.begin()) {
+      return false; // DAC initialization failed
+    }
+    resetDACOutputs();
+
+    // Set direction pins as outputs
+    pinMode(leftFrontDirPin, OUTPUT);
+    pinMode(rightFrontDirPin, OUTPUT);
+    pinMode(leftRearDirPin, OUTPUT);
+    pinMode(rightRearDirPin, OUTPUT);
+
+    // Set enable pins as outputs
+    pinMode(leftFrontEnablePin, OUTPUT);
+    pinMode(rightFrontEnablePin, OUTPUT);
+    pinMode(leftRearEnablePin, OUTPUT);
+    pinMode(rightRearEnablePin, OUTPUT);
+
+    // Set enable pins LOW
+    disableMotors();
+
+    return true;
+  }
+
+  // Reset all DAC outputs to 0
+  void resetDACOutputs() {
+    dac.setChannelValue(MCP4728_CHANNEL_A, 0);
+    dac.setChannelValue(MCP4728_CHANNEL_B, 0);
+    dac.setChannelValue(MCP4728_CHANNEL_C, 0);
+    dac.setChannelValue(MCP4728_CHANNEL_D, 0);
+  }
+
+  // Enable motors
+  void enableMotors() {
+    digitalWrite(leftFrontEnablePin, HIGH);
+    digitalWrite(rightFrontEnablePin, HIGH);
+    digitalWrite(leftRearEnablePin, HIGH);
+    digitalWrite(rightRearEnablePin, HIGH);
+  }
+
+  // Disable motors
+  void disableMotors() {
+    digitalWrite(leftFrontEnablePin, LOW);
+    digitalWrite(rightFrontEnablePin, LOW);
+    digitalWrite(leftRearEnablePin, LOW);
+    digitalWrite(rightRearEnablePin, LOW);
+  }
+
+  // Calculate motor powers and set motor directions and DAC outputs
+  void drive(float x, float y, float turn) {
+    calculateMotorPowers(x, y, turn);
+
+    // Set motor directions and DAC outputs
+    setMotor(leftFrontDirPin, leftFrontPower, MCP4728_CHANNEL_A);
+    setMotor(rightFrontDirPin, rightFrontPower, MCP4728_CHANNEL_B);
+    setMotor(leftRearDirPin, leftRearPower, MCP4728_CHANNEL_C);
+    setMotor(rightRearDirPin, rightRearPower, MCP4728_CHANNEL_D);
+  }
+
+  // Getter methods for motor power values
+  float getLeftFront() const { return leftFrontPower; }
+  float getRightFront() const { return rightFrontPower; }
+  float getLeftRear() const { return leftRearPower; }
+  float getRightRear() const { return rightRearPower; }
+
+private:
+  Adafruit_MCP4728 dac;
+
+  // Motor pins
+  int leftFrontDirPin, rightFrontDirPin, leftRearDirPin, rightRearDirPin;
+  int leftFrontEnablePin, rightFrontEnablePin, leftRearEnablePin, rightRearEnablePin;
+
+  // Motor power values
+  float leftFrontPower = 0, rightFrontPower = 0, leftRearPower = 0, rightRearPower = 0;
 
   // Calculate motor powers based on joystick inputs
   void calculateMotorPowers(float x, float y, float turn) {
+    leftFrontPower = y + x + turn;
+    rightFrontPower = y - x - turn;
+    leftRearPower = y - x + turn;
+    rightRearPower = y + x - turn;
 
-    // Calculate the angle of joystick vector
-    float theta = atan2(y, x);
-
-    // Calculate the magnitude of joystick vector
-    float power = hypot(x, y);
-
-    // Adjust theta by 45 degrees (PI/4 radians) to align with wheel axes
-    float sinComponent = sin(theta - PI / 4);
-    float cosComponent = cos(theta - PI / 4);
-
-    // Find the maximum of the absolute values
-    float maxComponent = max(abs(sinComponent), abs(cosComponent));
-
-    // Normalize sin and cos components
-    if (maxComponent != 0) { // Avoid division by zero
-      sinComponent /= maxComponent;
-      cosComponent /= maxComponent;
-    }
-
-    // Compute motor powers
-    leftFront = power * cosComponent + turn;
-    rightFront = power * sinComponent - turn;
-    leftRear = power * sinComponent + turn;
-    rightRear = power * cosComponent - turn;
-
-    // Compute the total power including turn
-    float totalPower = power + abs(turn);
-
-    // If total power > 1, normalize motor powers
-    if (totalPower > 1.0) {
-      leftFront /= totalPower;
-      rightFront /= totalPower;
-      leftRear /= totalPower;
-      rightRear /= totalPower;
+    // Normalize motor powers to the range [-1, 1]
+    float maxPower = max(max(abs(leftFrontPower), abs(rightFrontPower)),
+                         max(abs(leftRearPower), abs(rightRearPower)));
+    if (maxPower > 1) {
+      leftFrontPower /= maxPower;
+      rightFrontPower /= maxPower;
+      leftRearPower /= maxPower;
+      rightRearPower /= maxPower;
     }
   }
 
-  // Get motor power for the left front wheel
-  float getLeftFront() {
-    return leftFront;
-  }
+  // Set motor direction and output analog voltage
+  void setMotor(int directionPin, float motorValue, MCP4728_channel_t channel) {
+    // Scale [-1, 1] to [0, 4095]
+    int dacValue = abs(motorValue * 4095);
+    dacValue = constrain(dacValue, 0, 4095);
 
-  // Get motor power for the right front wheel
-  float getRightFront() {
-    return rightFront;
-  }
+    // Set direction: HIGH = CCW, LOW = CW
+    digitalWrite(directionPin, motorValue >= 0 ? LOW : HIGH);
 
-  // Get motor power for the left rear wheel
-  float getLeftRear() {
-    return leftRear;
+    // Set the corresponding MCP4728 channel output
+    dac.setChannelValue(channel, dacValue);
   }
-
-  // Get motor power for the right rear wheel
-  float getRightRear() {
-    return rightRear;
-  }
-
-private:
-  float leftFront = 0;
-  float rightFront = 0;
-  float leftRear = 0;
-  float rightRear = 0;
 };
 
 #endif // MECANUMCONTROL_H

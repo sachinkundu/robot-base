@@ -28,11 +28,6 @@ void enterDebugMode(MecanumControl &drive, XboxController &xbox) {
         break;
       }
 
-      if (debugCommand == 't') {
-        Serial.print(F("Normal mode serial printing "));
-      }
-
-      // System Status
       if (debugCommand == 's') {
         Serial.println(F("System Status:"));
         Serial.print(F("LF: "));
@@ -45,49 +40,7 @@ void enterDebugMode(MecanumControl &drive, XboxController &xbox) {
         Serial.println(drive.getRightRear(), 4);
       }
 
-      // Cardinal Directions
-      float x = 0, y = 0, turn = 0;
-
-      if (debugCommand == 'n') { // North
-        x = 0; y = 1;
-      } else if (debugCommand == 'e') { // East
-        x = 1; y = 0;
-      } else if (debugCommand == 'w') { // West
-        x = -1; y = 0;
-      } else if (debugCommand == 'x') { // South
-        x = 0; y = -1;
-      } else if (debugCommand == 'f') { // Northeast
-        x = 1; y = 1;
-      } else if (debugCommand == 'g') { // Northwest
-        x = -1; y = 1;
-      } else if (debugCommand == 'h') { // Southeast
-        x = 1; y = -1;
-      } else if (debugCommand == 'j') { // Southwest
-        x = -1; y = -1;
-      }
-
-      if (x != 0 || y != 0 || turn != 0) {
-        drive.calculateMotorPowers(x, y, turn);
-
-        if (serialPrintEnabled) {
-          Serial.println(F("Simulating Direction:"));
-          Serial.print(F("X: "));
-          Serial.print(x, 4);
-          Serial.print(F("\tY: "));
-          Serial.print(y, 4);
-          Serial.print(F("\tTurn: "));
-          Serial.println(turn, 4);
-
-          Serial.print(F("LF: "));
-          Serial.print(drive.getLeftFront(), 4);
-          Serial.print(F("\tRF: "));
-          Serial.print(drive.getRightFront(), 4);
-          Serial.print(F("\tLR: "));
-          Serial.print(drive.getLeftRear(), 4);
-          Serial.print(F("\tRR: "));
-          Serial.println(drive.getRightRear(), 4);
-        }
-      }
+      // Other debug commands...
     }
   }
 
