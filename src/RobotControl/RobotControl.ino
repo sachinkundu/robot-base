@@ -47,7 +47,6 @@ void setMotor(int directionPin, float motorValue, MCP4728_channel_t channel) {
 }
 
 void setup() {
-
   Serial.begin(115200);
   while (!Serial); // Wait for serial connection
 
@@ -57,13 +56,17 @@ void setup() {
   }
   Serial.println(F("XBOX USB Library Started"));
 
+  // Wait for the Xbox center button to be held for 5 seconds
+  Serial.println(F("Hold the Xbox center button for 5 seconds to start..."));
+  waitForXboxCenterButton();
+
   // Initialize MCP4728 DAC
   if (!dac.begin()) {
     Serial.println(F("Failed to initialize MCP4728!"));
     while (1);
-  } 
+  }
 
-  //Set Analog Output to 0
+  // Set Analog Output to 0
   dac.setChannelValue(MCP4728_CHANNEL_A, 0);
   dac.setChannelValue(MCP4728_CHANNEL_B, 0);
   dac.setChannelValue(MCP4728_CHANNEL_C, 0);
@@ -75,19 +78,43 @@ void setup() {
   pinMode(leftRearDirPin, OUTPUT);
   pinMode(rightRearDirPin, OUTPUT);
 
-  //set enable pins as outputs
+  // Set enable pins as outputs
   pinMode(leftFrontEnablePin, OUTPUT);
   pinMode(rightFrontEnablePin, OUTPUT);
   pinMode(leftRearEnablePin, OUTPUT);
-  pinMode(rightRearEnablePin, OUTPUT);
+  pinMode (rightRearEnablePin, OUTPUT);
 
-  //Set Enable pins LOW
+  // Set Enable pins LOW
   digitalWrite(leftFrontEnablePin, LOW);
   digitalWrite(rightFrontEnablePin, LOW);
   digitalWrite(leftRearEnablePin, LOW);
   digitalWrite(rightRearEnablePin, LOW);
 
   Serial.println(F("Setup complete"));
+}
+
+// Function to wait for the Xbox center button to be held for 5 seconds
+void waitForXboxCenterButton() {
+  unsigned long buttonPressStart = 0;
+  bool buttonHeld = false;
+
+  while (true) {
+    Usb.Task(); // Process USB tasks
+
+    if (xbox.isConnected()) {
+      if (xbox.getStartButtonPressed()) { // Check if the center button is pressed
+        if (!buttonHeld) {
+          buttonPressStart = millis(); // Start timing when the button is first pressed
+          buttonHeld = true;
+        } else if (millis() - buttonPressStart >= 5000) { // Check if held for 5 seconds
+          Serial.println(F("Xbox center button held for 5 seconds. Starting program..."));
+          break;
+        }
+      } else {
+        buttonHeld = false; // Reset if the button is released
+      }
+    }
+  }
 }
 
 bool deadManActivated() {
