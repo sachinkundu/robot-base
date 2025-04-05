@@ -13,6 +13,8 @@ public:
 
   // Update the controller state
   void update() {
+    if (disabled) return; // Ignore updates if disabled
+
     // Read joystick inputs (values from -32768 to 32767)
     int16_t xRaw = Xbox.getAnalogHat(LeftHatX);
     int16_t yRaw = Xbox.getAnalogHat(LeftHatY);
@@ -31,27 +33,32 @@ public:
 
   // Check if the Xbox controller is connected
   bool isConnected() {
-    return Xbox.Xbox360Connected;
+    return !disabled && Xbox.Xbox360Connected;
   }
 
   // Get normalized X-axis value
   float getX() {
-    return xNorm;
+    return disabled ? 0 : xNorm;
   }
 
   // Get normalized Y-axis value
   float getY() {
-    return yNorm;
+    return disabled ? 0 : yNorm;
   }
 
   // Get normalized turn value
   float getTurn() {
-    return turnNorm;
+    return disabled ? 0 : turnNorm;
   }
 
-  //Get left trigger value
+  // Get left trigger value
   uint8_t getLT() {
-    return Xbox.getButtonPress(LT);
+    return disabled ? 0 : Xbox.getButtonPress(LT);
+  }
+
+  // Enable or disable the controller
+  void setDisabled(bool state) {
+    disabled = state;
   }
 
 private:
@@ -59,6 +66,7 @@ private:
   float xNorm = 0;
   float yNorm = 0;
   float turnNorm = 0;
+  bool disabled = false; // Flag to disable the controller
 };
 
 #endif // XBOXCONTROLLER_H
