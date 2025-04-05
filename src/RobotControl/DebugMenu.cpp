@@ -2,7 +2,7 @@
 
 bool serialPrintEnabled = false;    // Flag to control serial printing
 
-void enterDebugMode(MecanumControl &drive, XboxController &xbox) {
+void enterDebugMode(MecanumDrive &drive, XboxController &xbox) {
   Serial.println(F("Entering Debug Mode..."));
   Serial.println(F("Commands:"));
   Serial.println(F("  q - Exit Debug Mode"));

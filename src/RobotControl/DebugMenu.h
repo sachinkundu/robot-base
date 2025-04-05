@@ -6,6 +6,6 @@
 #include "XboxController.h"
 
 // Function to initialize the debug menu
-void enterDebugMode(MecanumControl &drive, XboxController &xbox);
+void enterDebugMode(MecanumDrive &drive, XboxController &xbox);
 
 #endif // DEBUG_MENU_H

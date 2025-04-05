@@ -14,7 +14,7 @@ USB Usb;
 // Create instances of XboxController and MecanumControl
 XboxController xbox(&Usb);
 // Create an instance of MecanumControl
-MecanumControl drive;
+MecanumDrive mecanumControl;
 
 void setup() {
   Serial.begin(115200);
@@ -62,7 +62,7 @@ void loop() {
   if (!setupComplete) {
     if (waitForXboxCenterButton()) {
       // Initialize MecanumControl after the button is held
-      if (!drive.initialize()) {
+      if (!mecanumControl.initialize()) {
         Serial.println(F("Failed to initialize MecanumControl!"));
         while (1);
       }
@@ -80,7 +80,7 @@ void loop() {
   if (Serial.available()) {
     char command = Serial.read();
     if (command == 'd') {
-      enterDebugMode(drive, xbox);
+      enterDebugMode(mecanumControl, xbox);
     } else if (command == 'p') {
       printingEnabled = !printingEnabled; // Toggle printingEnabled flag
       if (printingEnabled) {
@@ -105,15 +105,15 @@ void loop() {
     }
 
     // Enable motors and drive
-    drive.enableMotors();
+    mecanumControl.enableMotors();
     x = xbox.getX();
     y = xbox.getY();
     turn = xbox.getTurn();
-    drive.drive(x, y, turn);
+    mecanumControl.move(x, y, turn);
 
   } else {
     // Disable motors
-    drive.disableMotors();
+    mecanumControl.disableMotors();
   }
 
   // Serial output for debugging

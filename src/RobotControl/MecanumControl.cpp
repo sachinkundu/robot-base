@@ -1,10 +1,10 @@
 #include "MecanumControl.h"
 
 // Constructor
-MecanumControl::MecanumControl() {}
+MecanumDrive::MecanumDrive() {}
 
 // Initialize the DAC and motor pins
-bool MecanumControl::initialize() {
+bool MecanumDrive::initialize() {
   if (!dac.begin()) {
     return false; // DAC initialization failed
   }
@@ -29,7 +29,7 @@ bool MecanumControl::initialize() {
 }
 
 // Reset all DAC outputs to 0
-void MecanumControl::resetDACOutputs() {
+void MecanumDrive::resetDACOutputs() {
   dac.setChannelValue(MCP4728_CHANNEL_A, 0);
   dac.setChannelValue(MCP4728_CHANNEL_B, 0);
   dac.setChannelValue(MCP4728_CHANNEL_C, 0);
@@ -37,7 +37,7 @@ void MecanumControl::resetDACOutputs() {
 }
 
 // Helper method to set the state of all motor enable pins
-void MecanumControl::setMotorEnableState(bool state) {
+void MecanumDrive::setMotorEnableState(bool state) {
   digitalWrite(leftFrontEnablePin, state ? HIGH : LOW);
   digitalWrite(rightFrontEnablePin, state ? HIGH : LOW);
   digitalWrite(leftRearEnablePin, state ? HIGH : LOW);
@@ -45,17 +45,17 @@ void MecanumControl::setMotorEnableState(bool state) {
 }
 
 // Enable motors
-void MecanumControl::enableMotors() {
+void MecanumDrive::enableMotors() {
   setMotorEnableState(true);
 }
 
 // Disable motors
-void MecanumControl::disableMotors() {
+void MecanumDrive::disableMotors() {
   setMotorEnableState(false);
 }
 
 // Calculate motor powers and set motor directions and DAC outputs
-void MecanumControl::drive(float x, float y, float turn) {
+void MecanumDrive::move(float x, float y, float turn) {
   calculateMotorPowers(x, y, turn);
 
   // Set motor directions and DAC outputs
@@ -66,13 +66,13 @@ void MecanumControl::drive(float x, float y, float turn) {
 }
 
 // Getter methods for motor power values
-float MecanumControl::getLeftFront() const { return leftFrontPower; }
-float MecanumControl::getRightFront() const { return rightFrontPower; }
-float MecanumControl::getLeftRear() const { return leftRearPower; }
-float MecanumControl::getRightRear() const { return rightRearPower; }
+float MecanumDrive::getLeftFront() const { return leftFrontPower; }
+float MecanumDrive::getRightFront() const { return rightFrontPower; }
+float MecanumDrive::getLeftRear() const { return leftRearPower; }
+float MecanumDrive::getRightRear() const { return rightRearPower; }
 
 // Calculate motor powers based on joystick inputs
-void MecanumControl::calculateMotorPowers(float x, float y, float turn) {
+void MecanumDrive::calculateMotorPowers(float x, float y, float turn) {
   leftFrontPower = y + x + turn;
   rightFrontPower = y - x - turn;
   leftRearPower = y - x + turn;
@@ -90,7 +90,7 @@ void MecanumControl::calculateMotorPowers(float x, float y, float turn) {
 }
 
 // Set motor direction and output analog voltage
-void MecanumControl::setMotor(int directionPin, float motorValue, MCP4728_channel_t channel) {
+void MecanumDrive::setMotor(int directionPin, float motorValue, MCP4728_channel_t channel) {
   // Scale [-1, 1] to [0, 4095]
   int dacValue = abs(motorValue * 4095);
   dacValue = constrain(dacValue, 0, 4095);

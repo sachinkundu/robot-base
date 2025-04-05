@@ -4,10 +4,10 @@
 #include <Arduino.h>
 #include <Adafruit_MCP4728.h>
 
-class MecanumControl {
+class MecanumDrive {
 public:
   // Constructor
-  MecanumControl();
+  MecanumDrive();
 
   // Initialize the DAC and motor pins
   bool initialize();
@@ -22,7 +22,7 @@ public:
   void disableMotors();
 
   // Calculate motor powers and set motor directions and DAC outputs
-  void drive(float x, float y, float turn);
+  void move(float x, float y, float turn);
 
   // Getter methods for motor power values
   float getLeftFront() const;
