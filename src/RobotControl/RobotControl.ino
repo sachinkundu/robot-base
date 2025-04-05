@@ -1,6 +1,4 @@
 #include <Arduino.h>
-#include <SPI.h>
-#include <Adafruit_MCP4728.h>
 #include "XboxController.h"
 #include "MecanumControl.h"
 #include "DebugMenu.h"
@@ -15,8 +13,8 @@ USB Usb;
 
 // Create instances of XboxController and MecanumControl
 XboxController xbox(&Usb);
-// Create an instance of MecanumControl with motor pins
-MecanumControl drive(33, 32, 30, 31, 42, 43, 44, 45);
+// Create an instance of MecanumControl
+MecanumControl drive;
 
 void setup() {
   Serial.begin(115200);
@@ -27,36 +25,23 @@ void setup() {
     while (1);
   }
   Serial.println(F("XBOX USB Library Started"));
-
-  // Wait for the Xbox center button to be held for 5 seconds
-  Serial.println(F("Hold the Xbox center button for 5 seconds to start..."));
-  waitForXboxCenterButton();
-
-  // Initialize MecanumControl
-  if (!drive.initialize()) {
-    Serial.println(F("Failed to initialize MecanumControl!"));
-    while (1);
-  }
-
-  Serial.println(F("Setup complete"));
 }
 
-// Function to wait for the Xbox center button to be held for 5 seconds
-void waitForXboxCenterButton() {
-  unsigned long buttonPressStart = 0;
-  bool buttonHeld = false;
+bool waitForXboxCenterButton() {
+  unsigned long buttonPressStart = 0; // Tracks when the button was first pressed
+  bool buttonHeld = false;           // Tracks if the button is currently held
 
   while (true) {
     Usb.Task(); // Process USB tasks
 
     if (xbox.isConnected()) {
-      if (xbox.getStartButtonPressed()) { // Check if the center button is pressed
+      if (xbox.getStartButtonPressed()) { // Check if the start button is pressed
         if (!buttonHeld) {
-          buttonPressStart = millis(); // Start timing when the button is first pressed
+          buttonPressStart = millis(); // Start the countdown
           buttonHeld = true;
         } else if (millis() - buttonPressStart >= 5000) { // Check if held for 5 seconds
           Serial.println(F("Xbox center button held for 5 seconds. Starting program..."));
-          break;
+          return true; // Exit and return success
         }
       } else {
         buttonHeld = false; // Reset if the button is released
@@ -66,10 +51,29 @@ void waitForXboxCenterButton() {
 }
 
 bool deadManActivated() {
-  return xbox.getLT() == 255;
+  // Example implementation: Check if the left trigger (LT) is pressed
+  return xbox.getLT() > 0.5; // Adjust the threshold as needed
 }
 
 void loop() {
+  static bool setupComplete = false; // Tracks whether the setup is complete
+
+  // Wait for the Xbox center button to be held for 5 seconds
+  if (!setupComplete) {
+    if (waitForXboxCenterButton()) {
+      // Initialize MecanumControl after the button is held
+      if (!drive.initialize()) {
+        Serial.println(F("Failed to initialize MecanumControl!"));
+        while (1);
+      }
+
+      Serial.println(F("Setup complete"));
+      setupComplete = true; // Mark setup as complete
+    }
+    return; // Exit the loop until setup is complete
+  }
+
+  // Main program logic
   Usb.Task();
 
   // Check for serial input to enter debug mode
@@ -89,7 +93,7 @@ void loop() {
 
   float x, y, turn;
 
-  // Check if Xbox controller is connected
+  // If the controller is connected and the deadman switch is activated, update the motors
   if (xbox.isConnected() && deadManActivated()) {
     xbox.update();
 
