@@ -38,7 +38,7 @@ bool waitForXboxCenterButton() {
         if (!buttonHeld) {
           buttonPressStart = millis(); // Start the countdown
           buttonHeld = true;
-        } else if (millis() - buttonPressStart >= 5000) { // Check if held for 5 seconds
+        } else if (millis() - buttonPressStart >= 1000) { // Check if held for 5 seconds
           Serial.println(F("Xbox center button held for 5 seconds. Starting program..."));
           return true; // Exit and return success
         }

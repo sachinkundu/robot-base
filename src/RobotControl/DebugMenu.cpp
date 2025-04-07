@@ -10,44 +10,54 @@ void motorControlSubmenu(MecanumDrive &drive) {
   Serial.print(F("RPM set to: "));
   Serial.println(rpm);
 
-  Serial.println(F("Select motor to activate:"));
-  Serial.println(F("  fl - Front Left"));
-  Serial.println(F("  fr - Front Right"));
-  Serial.println(F("  rl - Rear Left"));
-  Serial.println(F("  rr - Rear Right"));
-  Serial.println(F("  a  - All Motors"));
+  while (true) { // Repeat the motor selection menu until 'q' is pressed
+    Serial.println(F("Select motor to activate:"));
+    Serial.println(F("  1 - Front Left"));
+    Serial.println(F("  2 - Front Right"));
+    Serial.println(F("  3 - Rear Left"));
+    Serial.println(F("  4 - Rear Right"));
+    Serial.println(F("  a  - All Motors"));
+    Serial.println(F("  s  - Stop All Motors"));
+    Serial.println(F("  q  - Exit Motor Control Submenu"));
 
-  while (!Serial.available());
-  String motorSelection = Serial.readStringUntil('\n'); // Read motor selection
-
-  if (motorSelection == "fl" || motorSelection == "fr" || motorSelection == "rl" || motorSelection == "rr") {
-    Serial.println(F("Press f for forward or r for reverse:"));
     while (!Serial.available());
-    char direction = Serial.read();
-    bool forward = (direction == 'f');
+    String motorSelection = Serial.readStringUntil('\n'); // Read motor selection
 
-    if (motorSelection == "fl") {
-      drive.setMotorRPM("leftFront", rpm, forward);
-    } else if (motorSelection == "fr") {
-      drive.setMotorRPM("rightFront", rpm, forward);
-    } else if (motorSelection == "rl") {
-      drive.setMotorRPM("leftRear", rpm, forward);
-    } else if (motorSelection == "rr") {
-      drive.setMotorRPM("rightRear", rpm, forward);
+    if (motorSelection == "1" || motorSelection == "2" || motorSelection == "3" || motorSelection == "4") {
+      Serial.println(F("Press f for forward or r for reverse:"));
+      while (!Serial.available());
+      char direction = Serial.read();
+      bool forward = (direction == 'f');
+      drive.enableMotors(); // Enable motors before setting RPM
+      if (motorSelection == "1") {
+        drive.setMotorRPM("leftFront", rpm, forward);
+      } else if (motorSelection == "2") {
+        drive.setMotorRPM("rightFront", rpm, forward);
+      } else if (motorSelection == "3") {
+        drive.setMotorRPM("leftRear", rpm, forward);
+      } else if (motorSelection == "4") {
+        drive.setMotorRPM("rightRear", rpm, forward);
+      }
+    } else if (motorSelection == "a") {
+      Serial.println(F("Activating all motors. Use cardinal commands to control direction."));
+      // Show cardinal direction commands
+      Serial.println(F("  n - Move North"));
+      Serial.println(F("  e - Move East"));
+      Serial.println(F("  w - Move West"));
+      Serial.println(F("  x - Move South"));
+      Serial.println(F("  f - Move Northeast"));
+      Serial.println(F("  g - Move Northwest"));
+      Serial.println(F("  h - Move Southeast"));
+      Serial.println(F("  j - Move Southwest"));
+    } else if (motorSelection == "s") {
+      Serial.println(F("Stopping all motors."));
+      drive.disableMotors(); // Stop all motors
+    } else if (motorSelection == "q") {
+      Serial.println(F("Exiting Motor Control Submenu..."));
+      break; // Exit the submenu
+    } else {
+      Serial.println(F("Invalid motor selection."));
     }
-  } else if (motorSelection == "a") {
-    Serial.println(F("Activating all motors. Use cardinal commands to control direction."));
-    // Show cardinal direction commands
-    Serial.println(F("  n - Move North"));
-    Serial.println(F("  e - Move East"));
-    Serial.println(F("  w - Move West"));
-    Serial.println(F("  x - Move South"));
-    Serial.println(F("  f - Move Northeast"));
-    Serial.println(F("  g - Move Northwest"));
-    Serial.println(F("  h - Move Southeast"));
-    Serial.println(F("  j - Move Southwest"));
-  } else {
-    Serial.println(F("Invalid motor selection."));
   }
 }
 
