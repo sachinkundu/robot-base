@@ -26,12 +26,6 @@ public:
     turnNorm = turnRaw / 32767.0;
 
     // Apply deadzone to eliminate drift
-    Serial.println("xNorm: ");
-    Serial.println(xNorm);
-    Serial.println("yNorm: ");
-    Serial.println(yNorm);
-    Serial.println("turnNorm: ");
-    Serial.println(turnNorm);
     if (abs(xNorm) < DEADZONE) xNorm = 0;
     if (abs(yNorm) < DEADZONE) yNorm = 0;
     if (abs(turnNorm) < DEADZONE) turnNorm = 0;
@@ -63,7 +57,7 @@ public:
   }
 
   // Get left trigger value
-  uint8_t getStartButtonPressed() {
+  uint8_t getXBoxButtonPressed() {
     return disabled ? 0 : Xbox.getButtonPress(XBOX);
   }
 

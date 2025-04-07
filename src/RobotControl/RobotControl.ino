@@ -26,7 +26,7 @@ void setup() {
   Serial.println(F("XBOX USB Library Started"));
 }
 
-bool waitForXboxSTARTButton() {
+bool waitForXboxButton() {
   unsigned long buttonPressStart = 0; // Tracks when the button was first pressed
   bool buttonHeld = false;           // Tracks if the button is currently held
 
@@ -34,7 +34,7 @@ bool waitForXboxSTARTButton() {
     Usb.Task(); // Process USB tasks
 
     if (xbox.isConnected()) {
-      if (xbox.getStartButtonPressed()) { // Check if the start button is pressed
+      if (xbox.getXBoxButtonPressed()) { // Check if the start button is pressed
         if (!buttonHeld) {
           buttonPressStart = millis(); // Start the countdown
           buttonHeld = true;
@@ -71,7 +71,7 @@ void loop() {
   // Wait for the Xbox center button to be held for 5 seconds
   if (!setupComplete) {
     Serial.println(F("Hold the Xbox center button for 5 seconds to start the program."));
-    if (waitForXboxSTARTButton()) {
+    if (waitForXboxButton()) {
       // Initialize MecanumControl after the button is held
       if (!mecanumDrive.initialize()) {
         Serial.println(F("Failed to initialize MecanumControl!"));
