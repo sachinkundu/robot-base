@@ -186,3 +186,8 @@ void MecanumDrive::setMaxRPM(int maxRPM) {
   Serial.print(F("Maximum RPM set to: "));
   Serial.println(maxRPM);
 }
+
+// Get the maximum RPM
+int MecanumDrive::getMaxRPM() const {
+  return maxRPM;
+}

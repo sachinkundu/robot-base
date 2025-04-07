@@ -31,6 +31,9 @@ public:
   float getRightFront() const;
   float getLeftRear() const;
   float getRightRear() const;
+  
+  // Getter for maximum RPM
+  int getMaxRPM() const;
 
   // Set the maximum RPM
   void setMaxRPM(int maxRPM);

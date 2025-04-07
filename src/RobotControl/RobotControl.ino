@@ -76,7 +76,13 @@ void loop() {
   // Main program logic
   Usb.Task();
 
-  // Check for serial input to enter debug mode
+  // Display menu options
+  Serial.println(F("\nAvailable Commands:"));
+  Serial.println(F("  d - Enter Debug Mode"));
+  Serial.println(F("  p - Toggle Serial Printing"));
+  Serial.println(F("  h - Display this Help Menu"));
+
+  // Check for serial input
   if (Serial.available()) {
     char command = Serial.read();
     if (command == 'd') {
@@ -88,13 +94,20 @@ void loop() {
       } else {
         Serial.println(F("Normal mode serial printing disabled"));
       }
+    } else if (command == 'h') {
+      // Display the help menu again
+      Serial.println(F("\nAvailable Commands:"));
+      Serial.println(F("  d - Enter Debug Mode"));
+      Serial.println(F("  p - Toggle Serial Printing"));
+      Serial.println(F("  h - Display this Help Menu"));
+    } else {
+      Serial.println(F("Invalid command. Type 'h' for help."));
     }
   }
 
   float x, y, turn;
 
   // If the controller is connected and the deadman switch is activated, update the motors
-    // If the controller is connected and the deadman switch is activated, update the motors
   if (xbox.isConnected() && deadManActivated()) {
     xbox.update();
 

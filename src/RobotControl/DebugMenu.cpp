@@ -10,6 +10,9 @@ void motorControlSubmenu(MecanumDrive &drive) {
   Serial.print(F("RPM set to: "));
   Serial.println(rpm);
 
+  // Normalize RPM to a value between 0 and 1
+  float normalizedSpeed = static_cast<float>(rpm) / drive.getMaxRPM(); // Assuming getMaxRPM() returns the max RPM
+
   String activeMotor = ""; // Track the currently active motor
 
   while (true) { // Repeat the motor selection menu until 'q' is pressed
@@ -68,22 +71,8 @@ void motorControlSubmenu(MecanumDrive &drive) {
       }
     } else if (motorSelection == "a") {
       Serial.println(F("Activating all motors. Use cardinal commands to control direction."));
-      // Stop the previously active motor
-      if (activeMotor != "") {
-        Serial.print(F("Stopping previously active motor: "));
-        Serial.println(activeMotor);
-        if (activeMotor == "1") {
-          drive.disableLeftFrontMotor();
-        } else if (activeMotor == "2") {
-          drive.disableRightFrontMotor();
-        } else if (activeMotor == "3") {
-          drive.disableLeftRearMotor();
-        } else if (activeMotor == "4") {
-          drive.disableRightRearMotor();
-        }
-        activeMotor = ""; // Reset active motor
-      }
       drive.enableMotors(); // Enable all motors
+
       // Show cardinal direction commands
       Serial.println(F("  n - Move North"));
       Serial.println(F("  e - Move East"));
@@ -93,6 +82,50 @@ void motorControlSubmenu(MecanumDrive &drive) {
       Serial.println(F("  g - Move Northwest"));
       Serial.println(F("  h - Move Southeast"));
       Serial.println(F("  j - Move Southwest"));
+      Serial.println(F("  q - Exit Cardinal Direction Control"));
+      Serial.println(F("  s - Stop all motors"));
+
+      while (true) {
+        while (!Serial.available());
+        char directionCommand = Serial.read();
+
+        if (directionCommand == 'n') {
+          Serial.println(F("Moving North"));
+          drive.move(0, normalizedSpeed, 0); // Forward
+        } else if (directionCommand == 'e') {
+          Serial.println(F("Moving East"));
+          drive.move(normalizedSpeed, 0, 0); // Right
+        } else if (directionCommand == 'w') {
+          Serial.println(F("Moving West"));
+          drive.move(-normalizedSpeed, 0, 0); // Left
+        } else if (directionCommand == 'x') {
+          Serial.println(F("Moving South"));
+          drive.move(0, -normalizedSpeed, 0); // Backward
+        } else if (directionCommand == 'f') {
+          Serial.println(F("Moving Northeast"));
+          drive.move(normalizedSpeed, normalizedSpeed, 0); // Diagonal forward-right
+        } else if (directionCommand == 'g') {
+          Serial.println(F("Moving Northwest"));
+          drive.move(-normalizedSpeed, normalizedSpeed, 0); // Diagonal forward-left
+        } else if (directionCommand == 'h') {
+          Serial.println(F("Moving Southeast"));
+          drive.move(normalizedSpeed, -normalizedSpeed, 0); // Diagonal backward-right
+        } else if (directionCommand == 'j') {
+          Serial.println(F("Moving Southwest"));
+          drive.move(-normalizedSpeed, -normalizedSpeed, 0); // Diagonal backward-left
+        } else if (directionCommand == 's') {
+          Serial.println(F("Stopping all motors."));
+          drive.move(0, 0, 0); // Reset motor power values to zero
+          drive.disableMotors(); // Stop all motors
+        } else if (directionCommand == 'q') {
+          Serial.println(F("Exiting Cardinal Direction Control..."));
+          drive.move(0, 0, 0); // Reset motor power values to zero
+          drive.disableMotors(); // Stop all motors
+          break; // Exit the cardinal direction control loop
+        } else {
+          Serial.println(F("Invalid direction command."));
+        }
+      }
     } else if (motorSelection == "s") {
       Serial.println(F("Stopping all motors."));
       drive.disableMotors(); // Stop all motors
