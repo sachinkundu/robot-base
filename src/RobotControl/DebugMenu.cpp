@@ -54,14 +54,14 @@ void motorControlSubmenu(MecanumDrive &drive) {
       // Enable and set RPM for the selected motor
       if (motorSelection == "1") {
         drive.enableLeftFrontMotor();
-        drive.setMotorRPM("leftFront", rpm, forward);
+        drive.setMotorRPM("leftFront", rpm, !forward);
       } else if (motorSelection == "2") {
         drive.enableRightFrontMotor();
         drive.setMotorRPM("rightFront", rpm, forward);
       } else if (motorSelection == "3") {
         Serial.println(F("Enabling left rear motor."));
         drive.enableLeftRearMotor();
-        drive.setMotorRPM("leftRear", rpm, forward);
+        drive.setMotorRPM("leftRear", rpm, !forward);
       } else if (motorSelection == "4") {
         drive.enableRightRearMotor();
         drive.setMotorRPM("rightRear", rpm, forward);
