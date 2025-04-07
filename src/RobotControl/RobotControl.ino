@@ -1,7 +1,8 @@
 #include <Arduino.h>
+#include <SPI.h>
 #include <HardwareSerial.h> // Ensure Serial is defined
 #include "XboxController.h"
-#include "MecanumControl.h"
+#include "MecanumDrive.h"
 #include "DebugMenu.h"
 
 bool printingEnabled = false; // Flag for serial printing
@@ -50,7 +51,7 @@ bool waitForXboxCenterButton() {
 
 bool deadManActivated() {
   // Example implementation: Check if the left trigger (LT) is pressed
-  return xbox.getLT() > 0.5; // Adjust the threshold as needed
+  return xbox.getLT() == 255; // Completely pressed.
 }
 
 void loop() {
@@ -58,6 +59,7 @@ void loop() {
 
   // Wait for the Xbox center button to be held for 5 seconds
   if (!setupComplete) {
+    Serial.println(F("Hold the Xbox center button for 5 seconds to start the program."));
     if (waitForXboxCenterButton()) {
       // Initialize MecanumControl after the button is held
       if (!mecanumDrive.initialize()) {
@@ -92,6 +94,7 @@ void loop() {
   float x, y, turn;
 
   // If the controller is connected and the deadman switch is activated, update the motors
+    // If the controller is connected and the deadman switch is activated, update the motors
   if (xbox.isConnected() && deadManActivated()) {
     xbox.update();
 

@@ -58,7 +58,7 @@ public:
 
   // Get left trigger value
   uint8_t getStartButtonPressed() {
-    return disabled ? 0 : Xbox.getButtonPress(START);
+    return disabled ? 0 : Xbox.getButtonPress(XBOX);
   }
 
   // Enable or disable the controller

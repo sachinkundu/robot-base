@@ -2,7 +2,7 @@
 #define DEBUG_MENU_H
 
 #include <Arduino.h>
-#include "MecanumControl.h"
+#include "MecanumDrive.h"
 #include "XboxController.h"
 
 // Function to initialize the debug menu
