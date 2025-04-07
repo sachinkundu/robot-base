@@ -10,6 +10,8 @@ void motorControlSubmenu(MecanumDrive &drive) {
   Serial.print(F("RPM set to: "));
   Serial.println(rpm);
 
+  String activeMotor = ""; // Track the currently active motor
+
   while (true) { // Repeat the motor selection menu until 'q' is pressed
     Serial.println(F("Select motor to activate:"));
     Serial.println(F("  1 - Front Left"));
@@ -24,22 +26,63 @@ void motorControlSubmenu(MecanumDrive &drive) {
     String motorSelection = Serial.readStringUntil('\n'); // Read motor selection
 
     if (motorSelection == "1" || motorSelection == "2" || motorSelection == "3" || motorSelection == "4") {
+      Serial.println(F("Selected motor: "));
+      Serial.println(motorSelection);
       Serial.println(F("Press f for forward or r for reverse:"));
       while (!Serial.available());
       char direction = Serial.read();
       bool forward = (direction == 'f');
-      drive.enableMotors(); // Enable motors before setting RPM
+
+      // Stop the currently active motor if it's different from the new selection
+      if (activeMotor != "" && activeMotor != motorSelection) {
+        Serial.print(F("Stopping previously active motor: "));
+        Serial.println(activeMotor);
+        if (activeMotor == "1") {
+          drive.disableLeftFrontMotor();
+        } else if (activeMotor == "2") {
+          drive.disableRightFrontMotor();
+        } else if (activeMotor == "3") {
+          drive.disableLeftRearMotor();
+        } else if (activeMotor == "4") {
+          drive.disableRightRearMotor();
+        }
+      }
+
+      // Update the active motor
+      activeMotor = motorSelection;
+
+      // Enable and set RPM for the selected motor
       if (motorSelection == "1") {
+        drive.enableLeftFrontMotor();
         drive.setMotorRPM("leftFront", rpm, forward);
       } else if (motorSelection == "2") {
+        drive.enableRightFrontMotor();
         drive.setMotorRPM("rightFront", rpm, forward);
       } else if (motorSelection == "3") {
+        Serial.println(F("Enabling left rear motor."));
+        drive.enableLeftRearMotor();
         drive.setMotorRPM("leftRear", rpm, forward);
       } else if (motorSelection == "4") {
+        drive.enableRightRearMotor();
         drive.setMotorRPM("rightRear", rpm, forward);
       }
     } else if (motorSelection == "a") {
       Serial.println(F("Activating all motors. Use cardinal commands to control direction."));
+      // Stop the previously active motor
+      if (activeMotor != "") {
+        Serial.print(F("Stopping previously active motor: "));
+        Serial.println(activeMotor);
+        if (activeMotor == "1") {
+          drive.disableLeftFrontMotor();
+        } else if (activeMotor == "2") {
+          drive.disableRightFrontMotor();
+        } else if (activeMotor == "3") {
+          drive.disableLeftRearMotor();
+        } else if (activeMotor == "4") {
+          drive.disableRightRearMotor();
+        }
+        activeMotor = ""; // Reset active motor
+      }
       // Show cardinal direction commands
       Serial.println(F("  n - Move North"));
       Serial.println(F("  e - Move East"));
@@ -51,7 +94,11 @@ void motorControlSubmenu(MecanumDrive &drive) {
       Serial.println(F("  j - Move Southwest"));
     } else if (motorSelection == "s") {
       Serial.println(F("Stopping all motors."));
-      drive.disableMotors(); // Stop all motors
+      drive.disableLeftFrontMotor();
+      drive.disableRightFrontMotor();
+      drive.disableLeftRearMotor();
+      drive.disableRightRearMotor();
+      activeMotor = ""; // Reset active motor
     } else if (motorSelection == "q") {
       Serial.println(F("Exiting Motor Control Submenu..."));
       break; // Exit the submenu

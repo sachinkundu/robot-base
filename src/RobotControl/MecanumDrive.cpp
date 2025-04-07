@@ -162,15 +162,12 @@ void MecanumDrive::setMotorRPM(const String &motor, int rpm, bool forward) {
   // Convert RPM to a normalized value in the range [-1, 1]
   float normalizedValue = static_cast<float>(rpm) / maxRPM;
   normalizedValue = (2.0 * rpm / maxRPM) - 1.0;
+
+  Serial.println((String)"Motor: " + motor + ", RPM: " + rpm + ", Normalized Value: " + normalizedValue);
   
   // Use setMotor to handle direction and DAC output
   setMotor(directionPin, forward ? normalizedValue : -normalizedValue, channel);
 
-  Serial.print(F("Motor "));
-  Serial.print(motor);
-  Serial.print(F(" set to "));
-  Serial.print(rpm);
-  Serial.println(F(" RPM."));
 }
 
 // Set the maximum RPM
