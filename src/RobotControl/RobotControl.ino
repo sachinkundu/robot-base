@@ -26,7 +26,7 @@ void setup() {
   Serial.println(F("XBOX USB Library Started"));
 }
 
-bool waitForXboxCenterButton() {
+bool waitForXboxSTARTButton() {
   unsigned long buttonPressStart = 0; // Tracks when the button was first pressed
   bool buttonHeld = false;           // Tracks if the button is currently held
 
@@ -54,13 +54,24 @@ bool deadManActivated() {
   return xbox.getLT() == 255; // Completely pressed.
 }
 
+void printMainMenu() {
+  Serial.println(F("==================================="));
+  Serial.println(F("           Main Menu               "));
+  Serial.println(F("==================================="));
+  Serial.println(F("Available Commands:"));
+  Serial.println(F("  [d] Enter Debug Mode"));
+  Serial.println(F("  [p] Toggle Serial Printing"));
+  Serial.println(F("  [h] Display this Help Menu"));
+  Serial.println(F("==================================="));
+}
+
 void loop() {
   static bool setupComplete = false; // Tracks whether the setup is complete
 
   // Wait for the Xbox center button to be held for 5 seconds
   if (!setupComplete) {
     Serial.println(F("Hold the Xbox center button for 5 seconds to start the program."));
-    if (waitForXboxCenterButton()) {
+    if (waitForXboxSTARTButton()) {
       // Initialize MecanumControl after the button is held
       if (!mecanumDrive.initialize()) {
         Serial.println(F("Failed to initialize MecanumControl!"));
@@ -76,11 +87,8 @@ void loop() {
   // Main program logic
   Usb.Task();
 
-  // Display menu options
-  Serial.println(F("\nAvailable Commands:"));
-  Serial.println(F("  d - Enter Debug Mode"));
-  Serial.println(F("  p - Toggle Serial Printing"));
-  Serial.println(F("  h - Display this Help Menu"));
+  // Display the main menu
+  printMainMenu();
 
   // Check for serial input
   if (Serial.available()) {
@@ -96,10 +104,7 @@ void loop() {
       }
     } else if (command == 'h') {
       // Display the help menu again
-      Serial.println(F("\nAvailable Commands:"));
-      Serial.println(F("  d - Enter Debug Mode"));
-      Serial.println(F("  p - Toggle Serial Printing"));
-      Serial.println(F("  h - Display this Help Menu"));
+      printMainMenu();
     } else {
       Serial.println(F("Invalid command. Type 'h' for help."));
     }
