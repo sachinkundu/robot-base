@@ -83,6 +83,7 @@ void motorControlSubmenu(MecanumDrive &drive) {
         }
         activeMotor = ""; // Reset active motor
       }
+      drive.enableMotors(); // Enable all motors
       // Show cardinal direction commands
       Serial.println(F("  n - Move North"));
       Serial.println(F("  e - Move East"));
@@ -94,10 +95,7 @@ void motorControlSubmenu(MecanumDrive &drive) {
       Serial.println(F("  j - Move Southwest"));
     } else if (motorSelection == "s") {
       Serial.println(F("Stopping all motors."));
-      drive.disableLeftFrontMotor();
-      drive.disableRightFrontMotor();
-      drive.disableLeftRearMotor();
-      drive.disableRightRearMotor();
+      drive.disableMotors(); // Stop all motors
       activeMotor = ""; // Reset active motor
     } else if (motorSelection == "q") {
       Serial.println(F("Exiting Motor Control Submenu..."));
