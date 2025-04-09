@@ -4,6 +4,7 @@
 #include "XboxController.h"
 #include "MecanumDrive.h"
 #include "DebugMenu.h"
+#include "HMI.h"
 
 bool printingEnabled = false; // Flag for serial printing
 
@@ -14,16 +15,25 @@ USB Usb;
 
 XboxController xbox(&Usb);
 MecanumDrive mecanumDrive;
+HMI hmi(52, 53); // Red LED on pin 52, Green LED on pin 53
 
 void setup() {
   Serial.begin(115200);
   while (!Serial); // Wait for serial connection
 
+  hmi.begin(); // Initialize the HMI
+  hmi.blinkRed(); // Start with the red LED blinking
+
   if (Usb.Init() == -1) {
     Serial.println(F("USB initialization failed!"));
-    while (1);
+    while (1) {
+      hmi.update(); // Update HMI state
+    }
   }
   Serial.println(F("XBOX USB Library Started"));
+
+  // Before setup finishes, set the red LED to fully lit
+  hmi.setRed(true);
 }
 
 bool waitForXboxButton() {
@@ -67,6 +77,7 @@ void printMainMenu() {
 
 void loop() {
   static bool setupComplete = false; // Tracks whether the setup is complete
+  static bool menuDisplayed = false; // Tracks whether the menu has been displayed
 
   // Wait for the Xbox center button to be held for 5 seconds
   if (!setupComplete) {
@@ -80,19 +91,24 @@ void loop() {
 
       Serial.println(F("Setup complete"));
       setupComplete = true; // Mark setup as complete
+
+      // Start blinking the green LED after setup is complete
+      hmi.blinkGreen();
     }
     return; // Exit the loop until setup is complete
   }
 
-  // Main program logic
-  Usb.Task();
-
-  // Display the main menu
-  printMainMenu();
+  // Display the main menu only once until a user selects an option
+  if (!menuDisplayed) {
+    printMainMenu();
+    menuDisplayed = true; // Mark the menu as displayed
+  }
 
   // Check for serial input
   if (Serial.available()) {
     char command = Serial.read();
+    menuDisplayed = false; // Reset the flag to display the menu again after processing
+
     if (command == 'd') {
       enterDebugMode(mecanumDrive, xbox);
     } else if (command == 'p') {
@@ -105,6 +121,7 @@ void loop() {
     } else if (command == 'h') {
       // Display the help menu again
       printMainMenu();
+      menuDisplayed = true; // Keep the menu displayed after showing help
     } else {
       Serial.println(F("Invalid command. Type 'h' for help."));
     }
@@ -130,9 +147,15 @@ void loop() {
     turn = xbox.getTurn();
     mecanumDrive.move(x, y, turn);
 
+    // Set green LED to fully lit when deadman switch is activated
+    hmi.setGreen(true);
+
   } else {
     // Disable motors
     mecanumDrive.disableMotors();
+
+    // Blink green LED when deadman switch is not activated
+    hmi.blinkGreen();
   }
 
   // Serial output for debugging
@@ -140,4 +163,7 @@ void loop() {
     lastPrintTime = millis(); // Update the last print time
     Serial.println(F("Motor powers updated"));
   }
+
+  // Update the HMI state (handle blinking)
+  hmi.update();
 }

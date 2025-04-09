@@ -161,9 +161,6 @@ void enterDebugMode(MecanumDrive &drive, XboxController &xbox) {
   // Print the debug menu initially
   printDebugMenu();
 
-  // Disable Xbox controller inputs
-  xbox.setDisabled(true);
-
   while (true) {
     if (Serial.available()) {
       char debugCommand = Serial.read();
@@ -175,24 +172,25 @@ void enterDebugMode(MecanumDrive &drive, XboxController &xbox) {
       if (debugCommand == 's') {
         Serial.println(F("System Status:"));
         Serial.print(F("LF: "));
-        Serial.print(drive.getLeftFront(), 4);
+        Serial.print(drive.getLeftFront(), 2);
         Serial.print(F("\tRF: "));
-        Serial.print(drive.getRightFront(), 4);
+        Serial.print(drive.getRightFront(), 2);
         Serial.print(F("\tLR: "));
-        Serial.print(drive.getLeftRear(), 4);
+        Serial.print(drive.getLeftRear(), 2);
         Serial.print(F("\tRR: "));
-        Serial.println(drive.getRightRear(), 4);
+        Serial.println(drive.getRightRear(), 2);
       }
 
       if (debugCommand == 'm') {
+        // Disable Xbox controller inputs
+        xbox.setDisabled(true);
         motorControlSubmenu(drive); // Enter motor control submenu
         printDebugMenu(); // Print the debug menu again after returning from the submenu
+        // Re-enable Xbox controller inputs
+        xbox.setDisabled(false);
       }
-
       // Other debug commands...
     }
   }
 
-  // Re-enable Xbox controller inputs
-  xbox.setDisabled(false);
 }
