@@ -1,72 +1,70 @@
 #include <Arduino.h>
 #include <SPI.h>
-#include <HardwareSerial.h> // Ensure Serial is defined
+#include <HardwareSerial.h>
 #include "XboxController.h"
 #include "MecanumDrive.h"
 #include "DebugMenu.h"
 #include "HMI.h"
 
-bool printingEnabled = false; // Flag for serial printing
+bool printingEnabled = false;
 
-unsigned long lastPrintTime = 0; // Tracks the last time values were printed
-const unsigned long printInterval = 1000; // Interval for printing in milliseconds (1 second)
+unsigned long lastPrintTime = 0;
+const unsigned long printInterval = 1000;
 
 USB Usb;
 
 XboxController xbox(&Usb);
 MecanumDrive mecanumDrive;
-HMI hmi(52, 53); // Red LED on pin 52, Green LED on pin 53
+HMI hmi(52, 53);
 
 void setup() {
   Serial.begin(115200);
-  while (!Serial); // Wait for serial connection
+  while (!Serial);
 
-  hmi.begin(); // Initialize the HMI
-  hmi.blinkRed(); // Start with the red LED blinking
+  hmi.begin();
+  hmi.blinkRed();
 
   if (Usb.Init() == -1) {
     Serial.println(F("USB initialization failed!"));
     while (1) {
-      hmi.update(); // Update HMI state
+      hmi.update();
     }
   }
   Serial.println(F("XBOX USB Library Started"));
 
-  // Before setup finishes, set the red LED to fully lit
   hmi.setRed(true);
 }
 
 bool waitForXboxButton() {
-  unsigned long buttonPressStart = 0; // Tracks when the button was first pressed
-  bool buttonHeld = false;           // Tracks if the button is currently held
+  unsigned long buttonPressStart = 0;
+  bool buttonHeld = false;
 
   while (true) {
-    Usb.Task(); // Process USB tasks
+    Usb.Task();
 
     if (xbox.isConnected()) {
-      if (xbox.getXBoxButtonPressed()) { // Check if the start button is pressed
+      if (xbox.getXBoxButtonPressed()) {
         if (!buttonHeld) {
-          buttonPressStart = millis(); // Start the countdown
+          buttonPressStart = millis();
           buttonHeld = true;
-        } else if (millis() - buttonPressStart >= 1000) { // Check if held for 5 seconds
-          Serial.println(F("Xbox center button held for 5 seconds. Starting program..."));
-          return true; // Exit and return success
+        } else if (millis() - buttonPressStart >= 1000) {
+          Serial.println(F("Xbox center button held for 1 seconds. Starting program..."));
+          return true;
         }
       } else {
-        buttonHeld = false; // Reset if the button is released
+        buttonHeld = false;
       }
     }
   }
 }
 
 bool deadManActivated() {
-  // Example implementation: Check if the left trigger (LT) is pressed
-  return xbox.getLT() == 255; // Completely pressed.
+  return xbox.getLT() == 255;
 }
 
 void printMainMenu() {
   Serial.println(F("==================================="));
-  Serial.println(F("           Main Menu               "));
+  Serial.println(F("           Main Menu v 0.1         "));
   Serial.println(F("==================================="));
   Serial.println(F("Available Commands:"));
   Serial.println(F("  [d] Enter Debug Mode"));
@@ -76,52 +74,55 @@ void printMainMenu() {
 }
 
 void loop() {
-  static bool setupComplete = false; // Tracks whether the setup is complete
-  static bool menuDisplayed = false; // Tracks whether the menu has been displayed
+  static bool setupComplete = false;
+  static bool menuDisplayed = false;
 
-  // Wait for the Xbox center button to be held for 5 seconds
   if (!setupComplete) {
     Serial.println(F("Hold the Xbox center button for 5 seconds to start the program."));
+
+    xbox.setLedToLED4();
+
     if (waitForXboxButton()) {
-      // Initialize MecanumControl after the button is held
       if (!mecanumDrive.initialize()) {
         Serial.println(F("Failed to initialize MecanumControl!"));
         while (1);
       }
 
       Serial.println(F("Setup complete"));
-      setupComplete = true; // Mark setup as complete
+      setupComplete = true;
 
-      // Start blinking the green LED after setup is complete
+      xbox.setLedToLED1();
+
       hmi.blinkGreen();
+
+      xbox.setRumble(255, 255);
+      delay(300);
+      xbox.stopRumble();
     }
-    return; // Exit the loop until setup is complete
+    return;
   }
 
-  // Display the main menu only once until a user selects an option
   if (!menuDisplayed) {
     printMainMenu();
-    menuDisplayed = true; // Mark the menu as displayed
+    menuDisplayed = true;
   }
 
-  // Check for serial input
   if (Serial.available()) {
     char command = Serial.read();
-    menuDisplayed = false; // Reset the flag to display the menu again after processing
+    menuDisplayed = false;
 
     if (command == 'd') {
       enterDebugMode(mecanumDrive, xbox);
     } else if (command == 'p') {
-      printingEnabled = !printingEnabled; // Toggle printingEnabled flag
+      printingEnabled = !printingEnabled;
       if (printingEnabled) {
         Serial.println(F("Normal mode serial printing enabled"));
       } else {
         Serial.println(F("Normal mode serial printing disabled"));
       }
     } else if (command == 'h') {
-      // Display the help menu again
       printMainMenu();
-      menuDisplayed = true; // Keep the menu displayed after showing help
+      menuDisplayed = true;
     } else {
       Serial.println(F("Invalid command. Type 'h' for help."));
     }
@@ -129,41 +130,34 @@ void loop() {
 
   float x, y, turn;
 
-  // If the controller is connected and the deadman switch is activated, update the motors
   if (xbox.isConnected() && deadManActivated()) {
     xbox.update();
 
     if (printingEnabled && millis() - lastPrintTime >= printInterval) {
-      lastPrintTime = millis(); // Update the last print time
+      lastPrintTime = millis();
       Serial.print("DM pressed: ");
       Serial.print(xbox.getLT());
       Serial.println();
     }
 
-    // Enable motors and drive
     mecanumDrive.enableMotors();
     x = xbox.getX();
     y = xbox.getY();
     turn = xbox.getTurn();
     mecanumDrive.move(x, y, turn);
 
-    // Set green LED to fully lit when deadman switch is activated
     hmi.setGreen(true);
 
   } else {
-    // Disable motors
     mecanumDrive.disableMotors();
 
-    // Blink green LED when deadman switch is not activated
     hmi.blinkGreen();
   }
 
-  // Serial output for debugging
   if (printingEnabled && millis() - lastPrintTime >= printInterval) {
-    lastPrintTime = millis(); // Update the last print time
+    lastPrintTime = millis();
     Serial.println(F("Motor powers updated"));
   }
 
-  // Update the HMI state (handle blinking)
   hmi.update();
 }

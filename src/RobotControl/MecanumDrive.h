@@ -55,15 +55,15 @@ private:
   Adafruit_MCP4728 dac;
 
   // Motor pins
-  const int leftFrontDirPin = 33;
+  const int leftFrontDirPin = 30;
   const int rightFrontDirPin = 32;
-  const int leftRearDirPin = 30;
-  const int rightRearDirPin = 31;
+  const int leftRearDirPin = 36;
+  const int rightRearDirPin = 34;
 
   const int leftFrontEnablePin = 42;
-  const int rightFrontEnablePin = 43;
-  const int leftRearEnablePin = 44;
-  const int rightRearEnablePin = 45;
+  const int rightFrontEnablePin = 44;
+  const int leftRearEnablePin = 48;
+  const int rightRearEnablePin = 46;
 
   // Motor power values
   float leftFrontPower = 0, rightFrontPower = 0, leftRearPower = 0, rightRearPower = 0;

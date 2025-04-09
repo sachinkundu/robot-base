@@ -56,7 +56,7 @@ public:
     return disabled ? 0 : Xbox.getButtonPress(LT);
   }
 
-  // Get left trigger value
+  // Get Xbox button press value
   uint8_t getXBoxButtonPressed() {
     return disabled ? 0 : Xbox.getButtonPress(XBOX);
   }
@@ -64,6 +64,48 @@ public:
   // Enable or disable the controller
   void setDisabled(bool state) {
     disabled = state;
+  }
+
+  // Shim to set rumble on
+  void setRumble(uint8_t leftMotor, uint8_t rightMotor) {
+    if (!disabled) {
+      Xbox.setRumbleOn(leftMotor, rightMotor);
+    }
+  }
+
+  // Shim to turn rumble off
+  void stopRumble() {
+    if (!disabled) {
+      Xbox.setRumbleOn(0, 0); // Set both motors to 0 to stop vibration
+    }
+  }
+
+  // Shim to set the LED to rotating mode
+  void setLedRotating() {
+    if (!disabled) {
+      Xbox.setLedMode(ROTATING); // Call the XBOXUSB function with the ROTATING mode
+    }
+  }
+
+  // Shim to set the LED to LED1
+  void setLedToLED1() {
+    if (!disabled) {
+      Xbox.setLedOn(LED1); // Call the XBOXUSB function with the LED1 parameter
+    }
+  }
+
+  // Shim to set the LED to LED1
+  void setLedToLED4() {
+    if (!disabled) {
+      Xbox.setLedOn(LED4); // Call the XBOXUSB function with the LED4 parameter
+    }
+  }
+
+  // Shim to blink all LEDs
+  void setLedBlinkAll() {
+    if (!disabled) {
+      Xbox.setLedBlink(ALL); // Call the XBOXUSB function with the ALL_BLINKING mode
+    }
   }
 
 private:
