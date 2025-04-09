@@ -64,7 +64,7 @@ bool deadManActivated() {
 
 void printMainMenu() {
   Serial.println(F("==================================="));
-  Serial.println(F("           Main Menu v 0.1         "));
+  Serial.println(F("           Main Menu v 0.3         "));
   Serial.println(F("==================================="));
   Serial.println(F("Available Commands:"));
   Serial.println(F("  [d] Enter Debug Mode"));
@@ -78,9 +78,9 @@ void loop() {
   static bool menuDisplayed = false;
 
   if (!setupComplete) {
-    Serial.println(F("Hold the Xbox center button for 5 seconds to start the program."));
+    Serial.println(F("Hold the Xbox center button for 1 seconds to start the program."));
 
-    xbox.setLedToLED4();
+    xbox.setLedRotating();
 
     if (waitForXboxButton()) {
       if (!mecanumDrive.initialize()) {
@@ -127,10 +127,13 @@ void loop() {
       Serial.println(F("Invalid command. Type 'h' for help."));
     }
   }
-
+  
+  Usb.Task();
+  
   float x, y, turn;
 
   if (xbox.isConnected() && deadManActivated()) {
+    
     xbox.update();
 
     if (printingEnabled && millis() - lastPrintTime >= printInterval) {

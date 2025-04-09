@@ -65,6 +65,7 @@ private:
   const int leftRearEnablePin = 48;
   const int rightRearEnablePin = 46;
 
+
   // Motor power values
   float leftFrontPower = 0, rightFrontPower = 0, leftRearPower = 0, rightRearPower = 0;
 
