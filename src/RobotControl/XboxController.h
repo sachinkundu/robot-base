@@ -4,7 +4,8 @@
 #include <XBOXUSB.h>
 
 // Constants
-const float DEADZONE = 0.1; // Deadzone for joystick inputs (-1 to 1)
+const float LEFT_DEADZONE = 0.1;  // Deadzone for the left joystick (-1 to 1)
+const float RIGHT_DEADZONE = 0.15; // Deadzone for the right joystick (-1 to 1)
 
 class XboxController {
 public:
@@ -13,7 +14,7 @@ public:
 
   // Update the controller state
   void update() {
-    if (disabled) return; // Ignore updates if disabled
+    if (disabled) return;
 
     // Read joystick inputs (values from -32768 to 32767)
     int16_t xRaw = Xbox.getAnalogHat(LeftHatX);
@@ -25,10 +26,12 @@ public:
     yNorm = yRaw / 32767.0;
     turnNorm = turnRaw / 32767.0;
 
-    // Apply deadzone to eliminate drift
-    if (abs(xNorm) < DEADZONE) xNorm = 0;
-    if (abs(yNorm) < DEADZONE) yNorm = 0;
-    if (abs(turnNorm) < DEADZONE) turnNorm = 0;
+    // Apply deadzone for the left joystick
+    if (abs(xNorm) < LEFT_DEADZONE) xNorm = 0;
+    if (abs(yNorm) < LEFT_DEADZONE) yNorm = 0;
+
+    // Apply deadzone for the right joystick
+    if (abs(turnNorm) < RIGHT_DEADZONE) turnNorm = 0;
   }
 
   // Check if the Xbox controller is connected
@@ -76,35 +79,35 @@ public:
   // Shim to turn rumble off
   void stopRumble() {
     if (!disabled) {
-      Xbox.setRumbleOn(0, 0); // Set both motors to 0 to stop vibration
+      Xbox.setRumbleOn(0, 0);
     }
   }
 
   // Shim to set the LED to rotating mode
   void setLedRotating() {
     if (!disabled) {
-      Xbox.setLedMode(ROTATING); // Call the XBOXUSB function with the ROTATING mode
+      Xbox.setLedMode(ROTATING);
     }
   }
 
   // Shim to set the LED to LED1
   void setLedToLED1() {
     if (!disabled) {
-      Xbox.setLedOn(LED1); // Call the XBOXUSB function with the LED1 parameter
+      Xbox.setLedOn(LED1);
     }
   }
 
-  // Shim to set the LED to LED1
+  // Shim to set the LED to LED4
   void setLedToLED4() {
     if (!disabled) {
-      Xbox.setLedOn(LED4); // Call the XBOXUSB function with the LED4 parameter
+      Xbox.setLedOn(LED4);
     }
   }
 
   // Shim to blink all LEDs
   void setLedBlinkAll() {
     if (!disabled) {
-      Xbox.setLedBlink(ALL); // Call the XBOXUSB function with the ALL_BLINKING mode
+      Xbox.setLedBlink(ALL);
     }
   }
 
@@ -113,7 +116,7 @@ private:
   float xNorm = 0;
   float yNorm = 0;
   float turnNorm = 0;
-  bool disabled = false; // Flag to disable the controller
+  bool disabled = false;
 };
 
 #endif // XBOXCONTROLLER_H
