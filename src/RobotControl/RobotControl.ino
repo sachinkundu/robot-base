@@ -15,7 +15,7 @@ USB Usb;
 
 XboxController xbox(&Usb);
 MecanumDrive mecanumDrive;
-HMI hmi(52, 53);
+HMI hmi(26, 24);
 
 void setup() {
   Serial.begin(115200);
@@ -33,6 +33,7 @@ void setup() {
   Serial.println(F("XBOX USB Library Started"));
 
   hmi.setRed(true);
+  xbox.setLedRotating();
 }
 
 bool waitForXboxButton() {
@@ -64,7 +65,7 @@ bool deadManActivated() {
 
 void printMainMenu() {
   Serial.println(F("==================================="));
-  Serial.println(F("           Main Menu v 0.3         "));
+  Serial.println(F("           Main Menu v 0.4         "));
   Serial.println(F("==================================="));
   Serial.println(F("Available Commands:"));
   Serial.println(F("  [d] Enter Debug Mode"));
@@ -74,13 +75,13 @@ void printMainMenu() {
 }
 
 void loop() {
+  Usb.Task();
+
   static bool setupComplete = false;
   static bool menuDisplayed = false;
 
   if (!setupComplete) {
     Serial.println(F("Hold the Xbox center button for 1 seconds to start the program."));
-
-    xbox.setLedRotating();
 
     if (waitForXboxButton()) {
       if (!mecanumDrive.initialize()) {
@@ -96,7 +97,7 @@ void loop() {
       hmi.blinkGreen();
 
       xbox.setRumble(255, 255);
-      delay(300);
+      delay(100);
       xbox.stopRumble();
     }
     return;
@@ -128,7 +129,6 @@ void loop() {
     }
   }
   
-  Usb.Task();
   
   float x, y, turn;
 

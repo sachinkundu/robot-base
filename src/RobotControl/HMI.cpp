@@ -14,6 +14,7 @@ void HMI::begin() {
 void HMI::setRed(bool on) {
     redBlinking = false; // Stop blinking if manually controlled
     redState = on;
+    Serial.println("Red LED state: " + String(on ? "ON" : "OFF"));
     digitalWrite(redPin, on ? HIGH : LOW);
 }
 
