@@ -62,7 +62,6 @@ bool HMI::motorInFault() {
             this->setGreen(false); 
             this->blinkRed();
             return true;
-        } else {
         }
     }
     this->setRed(true); // Stop blinking red LED if no fault

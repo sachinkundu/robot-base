@@ -5,7 +5,6 @@
 #include "MecanumDrive.h"
 #include "DebugMenu.h"
 #include "HMI.h"
-#include "StatusPrinter.h"
 
 unsigned long lastPrintTime = 0;
 const unsigned long printInterval = 1000;
@@ -28,8 +27,6 @@ int redPin = 26; // Pin for red LED
 int greenPin = 24; // Pin for green LED
 
 HMI hmi(redPin, greenPin, motorFaultPins); // Pass motor fault pins to the HMI constructor
-
-StatusPrinter statusPrinter(xbox, mecanumDrive);
 
 void setup() {
   Serial.begin(115200);
@@ -115,6 +112,8 @@ void loop() {
 
     // Wait for Xbox button press if setup is not complete
     if (!setupComplete) {
+        Serial.println(F("Waiting for Xbox button press..."));
+        xbox.setLedRotating();
         if (waitForXboxButton()) {
             if (!mecanumDrive.initialize()) {
                 Serial.println(F("Failed to initialize MecanumControl!"));
@@ -124,14 +123,13 @@ void loop() {
             Serial.println(F("Setup complete"));
             setupComplete = true;
 
-            xbox.setLedToLED1();
             hmi.blinkGreen();
             xbox.setRumble(255, 255);
             delay(100);
             xbox.stopRumble();
         }
         return;
-    }
+    } 
 
     // Display the main menu if not already displayed
     if (!menuDisplayed) {
@@ -149,18 +147,13 @@ void loop() {
         } else if (command == 'h') {
             printMainMenu();
             menuDisplayed = true;
-        } else if (command == 's') {
-            statusPrintingActive = true; // Activate status printing mode
-            Serial.println(F("System status printing activated. Press 'q' to stop."));
-        } else if (command == 'q') {
-            statusPrintingActive = false; // Deactivate status printing mode
-            Serial.println(F("System status printing stopped."));
         } else {
             Serial.println(F("Invalid command. Type 'h' for help."));
         }
     }
 
     // Handle Xbox controller input and motor control
+    Usb.Task();
     float x, y, turn;
 
     if (xbox.isConnected() && deadManActivated()) {
@@ -173,17 +166,11 @@ void loop() {
         mecanumDrive.enableMotors();
         mecanumDrive.move(x, y, turn);
 
-        statusPrinter.accumulateData(x, y, turn);
+        // statusPrinter.accumulateData(x, y, turn);
         hmi.setGreen(true);
 
-        // Print system status if status printing mode is active
-        if (statusPrintingActive) {
-            statusPrinter.printSystemStatus();
-        }
     } else {
         mecanumDrive.disableMotors();
-
-        statusPrinter.clearAllCounters();
         hmi.blinkGreen();
     }
     hmi.update();
