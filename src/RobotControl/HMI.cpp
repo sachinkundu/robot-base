@@ -1,20 +1,26 @@
 #include "HMI.h"
 
-HMI::HMI(int redPin, int greenPin)
+HMI::HMI(int redPin, int greenPin, int motorFaultPins[4]) 
     : redPin(redPin), greenPin(greenPin), redState(false), greenState(false),
-      lastRedToggle(0), lastGreenToggle(0), redBlinking(false), greenBlinking(false) {}
+      lastRedToggle(0), lastGreenToggle(0), redBlinking(false), greenBlinking(false) {
+    for (int i = 0; i < 4; i++) {
+        this->motorFaultPins[i] = motorFaultPins[i];
+    }
+}
 
 void HMI::begin() {
     pinMode(redPin, OUTPUT);
     pinMode(greenPin, OUTPUT);
     digitalWrite(redPin, LOW);
     digitalWrite(greenPin, LOW);
+    for (int i = 0; i < 4; i++) {
+        pinMode(motorFaultPins[i], INPUT_PULLUP); // Fault pins are normally high
+    }
 }
 
 void HMI::setRed(bool on) {
     redBlinking = false; // Stop blinking if manually controlled
     redState = on;
-    Serial.println("Red LED state: " + String(on ? "ON" : "OFF"));
     digitalWrite(redPin, on ? HIGH : LOW);
 }
 
@@ -48,4 +54,17 @@ void HMI::update() {
         digitalWrite(greenPin, greenState ? HIGH : LOW);
         lastGreenToggle = currentMillis;
     }
+}
+
+bool HMI::motorInFault() {
+    for (int i = 0; i < 4; i++) {
+        if (digitalRead(motorFaultPins[i]) == LOW) {
+            this->setGreen(false); 
+            this->blinkRed();
+            return true;
+        } else {
+        }
+    }
+    this->setRed(true); // Stop blinking red LED if no fault
+    return false; // No faults
 }

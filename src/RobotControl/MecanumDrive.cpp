@@ -1,7 +1,7 @@
 #include "MecanumDrive.h"
 
 // Constructor
-MecanumDrive::MecanumDrive() {}
+MecanumDrive::MecanumDrive() : motorsEnabled(false) {}
 
 // Initialize the DAC and motor pins
 bool MecanumDrive::initialize() {
@@ -47,11 +47,14 @@ void MecanumDrive::setMotorEnableState(bool state) {
 // Enable motors
 void MecanumDrive::enableMotors() {
   setMotorEnableState(true);
+  motorsEnabled = true; // Update the state
 }
 
 // Disable motors
 void MecanumDrive::disableMotors() {
+  this->resetDACOutputs(); // Reset DAC outputs to 0
   setMotorEnableState(false);
+  motorsEnabled = false; // Update the state
 }
 
 // Enable and disable functions for individual motors
@@ -190,4 +193,9 @@ void MecanumDrive::setMaxRPM(int maxRPM) {
 // Get the maximum RPM
 int MecanumDrive::getMaxRPM() const {
   return maxRPM;
+}
+
+// Check if motors are enabled
+bool MecanumDrive::areMotorsEnabled() {
+  return motorsEnabled; // Return the current state of the motors
 }

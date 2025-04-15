@@ -20,6 +20,9 @@ public:
   // Disable motors
   void disableMotors();
 
+  // Check if motors are enabled
+  bool areMotorsEnabled();
+
   // Move the robot
   void move(float x, float y, float turn);
 
@@ -65,12 +68,14 @@ private:
   const int leftRearEnablePin = 48;
   const int rightRearEnablePin = 46;
 
-
   // Motor power values
   float leftFrontPower = 0, rightFrontPower = 0, leftRearPower = 0, rightRearPower = 0;
 
   // Maximum RPM (default is 50)
   int maxRPM = 75;
+
+  // Tracks the state of the motors
+  bool motorsEnabled;
 
   // Helper method to set the state of all motor enable pins
   void setMotorEnableState(bool state);

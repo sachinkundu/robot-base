@@ -5,17 +5,31 @@
 #include "MecanumDrive.h"
 #include "DebugMenu.h"
 #include "HMI.h"
-
-bool printingEnabled = false;
+#include "StatusPrinter.h"
 
 unsigned long lastPrintTime = 0;
 const unsigned long printInterval = 1000;
+
+float joystickXSum = 0;
+float joystickYSum = 0;
+float joystickTurnSum = 0;
+unsigned long joystickSampleCount = 0;
+unsigned long joystickLastResetTime = 0;
+
+float motorPowerSum[4] = {0, 0, 0, 0}; // Accumulate motor powers for 4 motors
+unsigned long motorSampleCount = 0;   // Count the number of motor power samples
 
 USB Usb;
 
 XboxController xbox(&Usb);
 MecanumDrive mecanumDrive;
-HMI hmi(26, 24);
+int motorFaultPins[4] = {43, 45, 47, 49}; // Define motor fault pins
+int redPin = 26; // Pin for red LED
+int greenPin = 24; // Pin for green LED
+
+HMI hmi(redPin, greenPin, motorFaultPins); // Pass motor fault pins to the HMI constructor
+
+StatusPrinter statusPrinter(xbox, mecanumDrive);
 
 void setup() {
   Serial.begin(115200);
@@ -64,103 +78,113 @@ bool deadManActivated() {
 }
 
 void printMainMenu() {
-  Serial.println(F("==================================="));
-  Serial.println(F("           Main Menu v 0.4         "));
-  Serial.println(F("==================================="));
-  Serial.println(F("Available Commands:"));
-  Serial.println(F("  [d] Enter Debug Mode"));
-  Serial.println(F("  [p] Toggle Serial Printing"));
-  Serial.println(F("  [h] Display this Help Menu"));
-  Serial.println(F("==================================="));
+    Serial.println(F("==================================="));
+    Serial.println(F("           Main Menu v 0.4         "));
+    Serial.println(F("==================================="));
+    Serial.println(F("Available Commands:"));
+    Serial.println(F("  [d] Enter Debug Mode"));
+    Serial.println(F("  [p] Toggle Serial Printing"));
+    Serial.println(F("  [h] Display this Help Menu"));
+    Serial.println(F("  [s] Print System Status"));
+    Serial.println(F("==================================="));
 }
 
 void loop() {
-  Usb.Task();
+    static bool setupComplete = false;
+    static bool menuDisplayed = false;
+    static bool motorFaultRecovered = false;
+    static bool statusPrintingActive = false; // Flag to track if status printing is active
 
-  static bool setupComplete = false;
-  static bool menuDisplayed = false;
-
-  if (!setupComplete) {
-    Serial.println(F("Hold the Xbox center button for 1 seconds to start the program."));
-
-    if (waitForXboxButton()) {
-      if (!mecanumDrive.initialize()) {
-        Serial.println(F("Failed to initialize MecanumControl!"));
-        while (1);
-      }
-
-      Serial.println(F("Setup complete"));
-      setupComplete = true;
-
-      xbox.setLedToLED1();
-
-      hmi.blinkGreen();
-
-      xbox.setRumble(255, 255);
-      delay(100);
-      xbox.stopRumble();
+    // Check for motor faults
+    if (hmi.motorInFault()) {
+        if (!motorFaultRecovered) {
+            Serial.println(F("Motor fault detected!"));
+            mecanumDrive.disableMotors();
+            motorFaultRecovered = true;
+        }
+        hmi.update();
+        return;
     }
-    return;
-  }
 
-  if (!menuDisplayed) {
-    printMainMenu();
-    menuDisplayed = true;
-  }
+    // Recover from motor fault
+    if (motorFaultRecovered) {
+        Serial.println(F("Motor fault cleared. Press the Xbox button to continue."));
+        motorFaultRecovered = false;
+        setupComplete = false;
+    }
 
-  if (Serial.available()) {
-    char command = Serial.read();
-    menuDisplayed = false;
+    // Wait for Xbox button press if setup is not complete
+    if (!setupComplete) {
+        if (waitForXboxButton()) {
+            if (!mecanumDrive.initialize()) {
+                Serial.println(F("Failed to initialize MecanumControl!"));
+                while (1);
+            }
 
-    if (command == 'd') {
-      enterDebugMode(mecanumDrive, xbox);
-    } else if (command == 'p') {
-      printingEnabled = !printingEnabled;
-      if (printingEnabled) {
-        Serial.println(F("Normal mode serial printing enabled"));
-      } else {
-        Serial.println(F("Normal mode serial printing disabled"));
-      }
-    } else if (command == 'h') {
-      printMainMenu();
-      menuDisplayed = true;
+            Serial.println(F("Setup complete"));
+            setupComplete = true;
+
+            xbox.setLedToLED1();
+            hmi.blinkGreen();
+            xbox.setRumble(255, 255);
+            delay(100);
+            xbox.stopRumble();
+        }
+        return;
+    }
+
+    // Display the main menu if not already displayed
+    if (!menuDisplayed) {
+        printMainMenu();
+        menuDisplayed = true;
+    }
+
+    // Handle serial input commands
+    if (Serial.available()) {
+        char command = Serial.read();
+        menuDisplayed = false;
+
+        if (command == 'd') {
+            enterDebugMode(mecanumDrive, xbox);
+        } else if (command == 'h') {
+            printMainMenu();
+            menuDisplayed = true;
+        } else if (command == 's') {
+            statusPrintingActive = true; // Activate status printing mode
+            Serial.println(F("System status printing activated. Press 'q' to stop."));
+        } else if (command == 'q') {
+            statusPrintingActive = false; // Deactivate status printing mode
+            Serial.println(F("System status printing stopped."));
+        } else {
+            Serial.println(F("Invalid command. Type 'h' for help."));
+        }
+    }
+
+    // Handle Xbox controller input and motor control
+    float x, y, turn;
+
+    if (xbox.isConnected() && deadManActivated()) {
+        xbox.update();
+
+        x = xbox.getX();
+        y = xbox.getY();
+        turn = xbox.getTurn();
+
+        mecanumDrive.enableMotors();
+        mecanumDrive.move(x, y, turn);
+
+        statusPrinter.accumulateData(x, y, turn);
+        hmi.setGreen(true);
+
+        // Print system status if status printing mode is active
+        if (statusPrintingActive) {
+            statusPrinter.printSystemStatus();
+        }
     } else {
-      Serial.println(F("Invalid command. Type 'h' for help."));
+        mecanumDrive.disableMotors();
+
+        statusPrinter.clearAllCounters();
+        hmi.blinkGreen();
     }
-  }
-  
-  
-  float x, y, turn;
-
-  if (xbox.isConnected() && deadManActivated()) {
-    
-    xbox.update();
-
-    if (printingEnabled && millis() - lastPrintTime >= printInterval) {
-      lastPrintTime = millis();
-      Serial.print("DM pressed: ");
-      Serial.print(xbox.getLT());
-      Serial.println();
-    }
-
-    mecanumDrive.enableMotors();
-    x = xbox.getX();
-    y = xbox.getY();
-    turn = xbox.getTurn();
-    mecanumDrive.move(x, y, turn);
-
-    hmi.setGreen(true);
-
-  } else {
-    mecanumDrive.disableMotors();
-
-    hmi.blinkGreen();
-  }
-
-  if (printingEnabled && millis() - lastPrintTime >= printInterval) {
-    lastPrintTime = millis();
-    Serial.println(F("Motor powers updated"));
-  }
-
-  hmi.update();
+    hmi.update();
 }
