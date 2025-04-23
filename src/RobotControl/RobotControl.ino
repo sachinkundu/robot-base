@@ -87,6 +87,7 @@ void printMainMenu() {
 }
 
 void loop() {
+    Usb.Task();
     static bool setupComplete = false;
     static bool menuDisplayed = false;
     static bool motorFaultRecovered = false;
@@ -94,7 +95,7 @@ void loop() {
 
     // Check for motor faults
     if (hmi.motorInFault()) {
-        if (!motorFaultRecovered) {
+      if (!motorFaultRecovered) {
             Serial.println(F("Motor fault detected!"));
             mecanumDrive.disableMotors();
             motorFaultRecovered = true;
@@ -122,7 +123,7 @@ void loop() {
 
             Serial.println(F("Setup complete"));
             setupComplete = true;
-
+            xbox.setLedToLED1();
             hmi.blinkGreen();
             xbox.setRumble(255, 255);
             delay(100);
@@ -153,9 +154,8 @@ void loop() {
     }
 
     // Handle Xbox controller input and motor control
-    Usb.Task();
     float x, y, turn;
-
+    // print status of deadManActivated
     if (xbox.isConnected() && deadManActivated()) {
         xbox.update();
 
@@ -166,7 +166,6 @@ void loop() {
         mecanumDrive.enableMotors();
         mecanumDrive.move(x, y, turn);
 
-        // statusPrinter.accumulateData(x, y, turn);
         hmi.setGreen(true);
 
     } else {

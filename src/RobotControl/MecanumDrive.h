@@ -69,7 +69,7 @@ private:
   const int rightRearEnablePin = 46;
 
   // Motor power values
-  float leftFrontPower = 0, rightFrontPower = 0, leftRearPower = 0, rightRearPower = 0;
+  float frontLeftPower = 0, frontRightPower = 0, rearLeftPower = 0, rearRightPower = 0;
 
   // Maximum RPM (default is 50)
   int maxRPM = 75;

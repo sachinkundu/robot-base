@@ -57,6 +57,13 @@ void HMI::update() {
 }
 
 bool HMI::motorInFault() {
+    // // Print status of motor fault pins
+    // for (int i = 0; i < 4; i++) {
+    //     Serial.print(F("Motor fault pin "));
+    //     Serial.print(motorFaultPins[i]);
+    //     Serial.print(F(": "));
+    //     Serial.println(digitalRead(motorFaultPins[i]) == LOW ? "FAULT" : "OK");
+    // }
     for (int i = 0; i < 4; i++) {
         if (digitalRead(motorFaultPins[i]) == LOW) {
             this->setGreen(false); 

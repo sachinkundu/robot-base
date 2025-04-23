@@ -24,7 +24,7 @@ void printCardinalDirectionMenu() {
   Serial.println(F("  [n] Move North"));
   Serial.println(F("  [e] Move East"));
   Serial.println(F("  [w] Move West"));
-  Serial.println(F("  [x] Move South"));
+  Serial.println(F("  [s] Move South")); // Changed from 'x' to 's'
   Serial.println(F("  [f] Move Northeast"));
   Serial.println(F("  [g] Move Northwest"));
   Serial.println(F("  [h] Move Southeast"));
@@ -111,11 +111,13 @@ void motorControlSubmenu(MecanumDrive &drive) {
             case 'n': Serial.println(F("Moving North")); drive.move(0, normalizedSpeed, 0); break;
             case 'e': Serial.println(F("Moving East")); drive.move(normalizedSpeed, 0, 0); break;
             case 'w': Serial.println(F("Moving West")); drive.move(-normalizedSpeed, 0, 0); break;
-            case 'x': Serial.println(F("Moving South")); drive.move(0, -normalizedSpeed, 0); break;
+            case 's': Serial.println(F("Moving South")); drive.move(0, -normalizedSpeed, 0); break;
             case 'f': Serial.println(F("Moving Northeast")); drive.move(normalizedSpeed, normalizedSpeed, 0); break;
             case 'g': Serial.println(F("Moving Northwest")); drive.move(-normalizedSpeed, normalizedSpeed, 0); break;
             case 'h': Serial.println(F("Moving Southeast")); drive.move(normalizedSpeed, -normalizedSpeed, 0); break;
             case 'j': Serial.println(F("Moving Southwest")); drive.move(-normalizedSpeed, -normalizedSpeed, 0); break;
+            case 'r': Serial.println(F("Rotating Right")); drive.move(0, 0, normalizedSpeed); break;
+            case 'l': Serial.println(F("Rotating Left")); drive.move(0, 0, -normalizedSpeed); break;
             case 27: // ESC key
               stopAllMotors(drive);
               break;

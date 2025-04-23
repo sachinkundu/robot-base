@@ -96,33 +96,33 @@ void MecanumDrive::move(float x, float y, float turn) {
   calculateMotorPowers(x, y, turn);
 
   // Set motor directions and DAC outputs
-  setMotor(leftFrontDirPin, -leftFrontPower, MCP4728_CHANNEL_A);
-  setMotor(rightFrontDirPin, rightFrontPower, MCP4728_CHANNEL_B);
-  setMotor(leftRearDirPin, -leftRearPower, MCP4728_CHANNEL_C);
-  setMotor(rightRearDirPin, rightRearPower, MCP4728_CHANNEL_D);
+  setMotor(leftFrontDirPin, -frontLeftPower, MCP4728_CHANNEL_A);
+  setMotor(rightFrontDirPin, frontRightPower, MCP4728_CHANNEL_B);
+  setMotor(leftRearDirPin, -rearLeftPower, MCP4728_CHANNEL_C);
+  setMotor(rightRearDirPin, rearRightPower, MCP4728_CHANNEL_D);
 }
 
 // Getter methods for motor power values
-float MecanumDrive::getLeftFront() const { return leftFrontPower; }
-float MecanumDrive::getRightFront() const { return rightFrontPower; }
-float MecanumDrive::getLeftRear() const { return leftRearPower; }
-float MecanumDrive::getRightRear() const { return rightRearPower; }
+float MecanumDrive::getLeftFront() const { return frontLeftPower; }
+float MecanumDrive::getRightFront() const { return frontRightPower; }
+float MecanumDrive::getLeftRear() const { return rearLeftPower; }
+float MecanumDrive::getRightRear() const { return rearRightPower; }
 
 // Calculate motor powers based on joystick inputs
 void MecanumDrive::calculateMotorPowers(float x, float y, float turn) {
-  leftFrontPower = y + x + turn;
-  rightFrontPower = y - x - turn;
-  leftRearPower = y - x + turn;
-  rightRearPower = y + x - turn;
+  frontLeftPower = y + x + turn;
+  frontRightPower = y - x - turn;
+  rearLeftPower = y - x + turn;
+  rearRightPower = y + x - turn;
 
   // Normalize motor powers to the range [-1, 1]
-  float maxPower = max(max(abs(leftFrontPower), abs(rightFrontPower)),
-                       max(abs(leftRearPower), abs(rightRearPower)));
+  float maxPower = max(max(abs(frontLeftPower), abs(frontRightPower)),
+                       max(abs(rearLeftPower), abs(rearRightPower)));
   if (maxPower > 1) {
-    leftFrontPower /= maxPower;
-    rightFrontPower /= maxPower;
-    leftRearPower /= maxPower;
-    rightRearPower /= maxPower;
+    frontLeftPower /= maxPower;
+    frontRightPower /= maxPower;
+    rearLeftPower /= maxPower;
+    rearRightPower /= maxPower;
   }
 }
 
