@@ -95,11 +95,11 @@ void MecanumDrive::disableRearRightMotor() {
 void MecanumDrive::move(float x, float y, float turn) {
   calculateMotorPowers(x, y, turn);
 
-  // Set motor directions and DAC outputs
-  setMotor(frontLeftDirPin, -frontLeftPower, MCP4728_CHANNEL_A);
-  setMotor(frontRightDirPin, frontRightPower, MCP4728_CHANNEL_B);
-  setMotor(rearLeftDirPin, -rearLeftPower, MCP4728_CHANNEL_C);
-  setMotor(rearRightDirPin, rearRightPower, MCP4728_CHANNEL_D);
+  // Reverse the direction of the motors responsible for strafing
+  setMotor(frontLeftDirPin, frontLeftPower, MCP4728_CHANNEL_A);
+  setMotor(frontRightDirPin, -frontRightPower, MCP4728_CHANNEL_B);
+  setMotor(rearLeftDirPin, rearLeftPower, MCP4728_CHANNEL_C);
+  setMotor(rearRightDirPin, -rearRightPower, MCP4728_CHANNEL_D);
 }
 
 // Getter methods for motor power values
