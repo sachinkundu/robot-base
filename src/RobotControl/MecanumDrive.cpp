@@ -93,13 +93,27 @@ void MecanumDrive::disableRearRightMotor() {
 
 // Calculate motor powers and set motor directions and DAC outputs
 void MecanumDrive::move(float x, float y, float turn) {
+  // Apply ramp scaling to joystick inputs
+  x = applyRamp(x);
+  y = applyRamp(y);
+  turn = applyRamp(turn);
+
   calculateMotorPowers(x, y, turn);
 
-  // Reverse the direction of the motors responsible for strafing
+  // Set motor directions and DAC outputs
   setMotor(frontLeftDirPin, frontLeftPower, MCP4728_CHANNEL_A);
   setMotor(frontRightDirPin, -frontRightPower, MCP4728_CHANNEL_B);
   setMotor(rearLeftDirPin, rearLeftPower, MCP4728_CHANNEL_C);
   setMotor(rearRightDirPin, -rearRightPower, MCP4728_CHANNEL_D);
+}
+
+// Apply ramp scaling to joystick input
+float MecanumDrive::applyRamp(float input) {
+  // Ramp factor controls the non-linearity (e.g., 1.5 for cubic scaling)
+  const float rampFactor = 2.0;
+
+  // Preserve the sign of the input
+  return (input >= 0 ? 1 : -1) * pow(abs(input), rampFactor);
 }
 
 // Getter methods for motor power values

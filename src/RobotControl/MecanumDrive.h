@@ -82,6 +82,9 @@ private:
 
   // Calculate motor powers based on joystick inputs
   void calculateMotorPowers(float x, float y, float turn);
+
+  float MecanumDrive::applyRamp(float input);
+
 };
 
 #endif // MECANUMDRIVE_H
