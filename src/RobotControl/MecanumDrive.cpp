@@ -98,6 +98,10 @@ void MecanumDrive::move(float x, float y, float turn) {
   y = applyRamp(y);
   turn = applyRamp(turn);
 
+  // Scale down strafing speed
+  const float strafingScale = 0.5; // Adjust this value to control strafing speed (e.g., 0.5 for 50% speed)
+  x *= strafingScale;
+
   calculateMotorPowers(x, y, turn);
 
   // Set motor directions and DAC outputs
