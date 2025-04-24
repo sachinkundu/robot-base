@@ -11,16 +11,16 @@ bool MecanumDrive::initialize() {
   resetDACOutputs();
 
   // Set direction pins as outputs
-  pinMode(leftFrontDirPin, OUTPUT);
-  pinMode(rightFrontDirPin, OUTPUT);
-  pinMode(leftRearDirPin, OUTPUT);
-  pinMode(rightRearDirPin, OUTPUT);
+  pinMode(frontLeftDirPin, OUTPUT);
+  pinMode(frontRightDirPin, OUTPUT);
+  pinMode(rearLeftDirPin, OUTPUT);
+  pinMode(rearRightDirPin, OUTPUT);
 
   // Set enable pins as outputs
-  pinMode(leftFrontEnablePin, OUTPUT);
-  pinMode(rightFrontEnablePin, OUTPUT);
-  pinMode(leftRearEnablePin, OUTPUT);
-  pinMode(rightRearEnablePin, OUTPUT);
+  pinMode(frontLeftEnablePin, OUTPUT);
+  pinMode(frontRightEnablePin, OUTPUT);
+  pinMode(rearLeftEnablePin, OUTPUT);
+  pinMode(rearRightEnablePin, OUTPUT);
 
   // Set enable pins LOW
   disableMotors();
@@ -38,10 +38,10 @@ void MecanumDrive::resetDACOutputs() {
 
 // Helper method to set the state of all motor enable pins
 void MecanumDrive::setMotorEnableState(bool state) {
-  digitalWrite(leftFrontEnablePin, state ? HIGH : LOW);
-  digitalWrite(rightFrontEnablePin, state ? HIGH : LOW);
-  digitalWrite(leftRearEnablePin, state ? HIGH : LOW);
-  digitalWrite(rightRearEnablePin, state ? HIGH : LOW);
+  digitalWrite(frontLeftEnablePin, state ? HIGH : LOW);
+  digitalWrite(frontRightEnablePin, state ? HIGH : LOW);
+  digitalWrite(rearLeftEnablePin, state ? HIGH : LOW);
+  digitalWrite(rearRightEnablePin, state ? HIGH : LOW);
 }
 
 // Enable motors
@@ -59,36 +59,36 @@ void MecanumDrive::disableMotors() {
 
 // Enable and disable functions for individual motors
 
-void MecanumDrive::enableLeftFrontMotor() {
-  digitalWrite(leftFrontEnablePin, HIGH);
+void MecanumDrive::enableFrontLeftMotor() {
+  digitalWrite(frontLeftEnablePin, HIGH);
 }
 
-void MecanumDrive::disableLeftFrontMotor() {
-  digitalWrite(leftFrontEnablePin, LOW);
+void MecanumDrive::disableFrontLeftMotor() {
+  digitalWrite(frontLeftEnablePin, LOW);
 }
 
-void MecanumDrive::enableRightFrontMotor() {
-  digitalWrite(rightFrontEnablePin, HIGH);
+void MecanumDrive::enableFrontRightMotor() {
+  digitalWrite(frontRightEnablePin, HIGH);
 }
 
-void MecanumDrive::disableRightFrontMotor() {
-  digitalWrite(rightFrontEnablePin, LOW);
+void MecanumDrive::disableFrontRightMotor() {
+  digitalWrite(frontRightEnablePin, LOW);
 }
 
-void MecanumDrive::enableLeftRearMotor() {
-  digitalWrite(leftRearEnablePin, HIGH);
+void MecanumDrive::enableRearLeftMotor() {
+  digitalWrite(rearLeftEnablePin, HIGH);
 }
 
-void MecanumDrive::disableLeftRearMotor() {
-  digitalWrite(leftRearEnablePin, LOW);
+void MecanumDrive::disableRearLeftMotor() {
+  digitalWrite(rearLeftEnablePin, LOW);
 }
 
-void MecanumDrive::enableRightRearMotor() {
-  digitalWrite(rightRearEnablePin, HIGH);
+void MecanumDrive::enableRearRightMotor() {
+  digitalWrite(rearRightEnablePin, HIGH);
 }
 
-void MecanumDrive::disableRightRearMotor() {
-  digitalWrite(rightRearEnablePin, LOW);
+void MecanumDrive::disableRearRightMotor() {
+  digitalWrite(rearRightEnablePin, LOW);
 }
 
 // Calculate motor powers and set motor directions and DAC outputs
@@ -96,17 +96,17 @@ void MecanumDrive::move(float x, float y, float turn) {
   calculateMotorPowers(x, y, turn);
 
   // Set motor directions and DAC outputs
-  setMotor(leftFrontDirPin, -frontLeftPower, MCP4728_CHANNEL_A);
-  setMotor(rightFrontDirPin, frontRightPower, MCP4728_CHANNEL_B);
-  setMotor(leftRearDirPin, -rearLeftPower, MCP4728_CHANNEL_C);
-  setMotor(rightRearDirPin, rearRightPower, MCP4728_CHANNEL_D);
+  setMotor(frontLeftDirPin, -frontLeftPower, MCP4728_CHANNEL_A);
+  setMotor(frontRightDirPin, frontRightPower, MCP4728_CHANNEL_B);
+  setMotor(rearLeftDirPin, -rearLeftPower, MCP4728_CHANNEL_C);
+  setMotor(rearRightDirPin, rearRightPower, MCP4728_CHANNEL_D);
 }
 
 // Getter methods for motor power values
-float MecanumDrive::getLeftFront() const { return frontLeftPower; }
-float MecanumDrive::getRightFront() const { return frontRightPower; }
-float MecanumDrive::getLeftRear() const { return rearLeftPower; }
-float MecanumDrive::getRightRear() const { return rearRightPower; }
+float MecanumDrive::getFrontLeft() const { return frontLeftPower; }
+float MecanumDrive::getFrontRight() const { return frontRightPower; }
+float MecanumDrive::getRearLeft() const { return rearLeftPower; }
+float MecanumDrive::getRearRight() const { return rearRightPower; }
 
 // Calculate motor powers based on joystick inputs
 void MecanumDrive::calculateMotorPowers(float x, float y, float turn) {
@@ -145,17 +145,17 @@ void MecanumDrive::setMotorRPM(const String &motor, int rpm, bool forward) {
   MCP4728_channel_t channel;
 
   // Map motor names to pins and DAC channels
-  if (motor == "leftFront") {
-    directionPin = leftFrontDirPin;
+  if (motor == "frontLeft") {
+    directionPin = frontLeftDirPin;
     channel = MCP4728_CHANNEL_A;
-  } else if (motor == "rightFront") {
-    directionPin = rightFrontDirPin;
+  } else if (motor == "frontRight") {
+    directionPin = frontRightDirPin;
     channel = MCP4728_CHANNEL_B;
-  } else if (motor == "leftRear") {
-    directionPin = leftRearDirPin;
+  } else if (motor == "rearLeft") {
+    directionPin = rearLeftDirPin;
     channel = MCP4728_CHANNEL_C;
-  } else if (motor == "rightRear") {
-    directionPin = rightRearDirPin;
+  } else if (motor == "rearRight") {
+    directionPin = rearRightDirPin;
     channel = MCP4728_CHANNEL_D;
   } else {
     Serial.println(F("Invalid motor name."));

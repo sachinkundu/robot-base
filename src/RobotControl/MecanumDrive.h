@@ -30,11 +30,11 @@ public:
   void setMotorRPM(const String &motor, int rpm, bool forward);
 
   // Getter methods for motor power values
-  float getLeftFront() const;
-  float getRightFront() const;
-  float getLeftRear() const;
-  float getRightRear() const;
-  
+  float getFrontLeft() const;
+  float getFrontRight() const;
+  float getRearLeft() const;
+  float getRearRight() const;
+
   // Getter for maximum RPM
   int getMaxRPM() const;
 
@@ -45,28 +45,28 @@ public:
   void setMotor(int directionPin, float motorValue, MCP4728_channel_t channel);
 
   // Individual motor enable/disable functions
-  void enableLeftFrontMotor();
-  void disableLeftFrontMotor();
-  void enableRightFrontMotor();
-  void disableRightFrontMotor();
-  void enableLeftRearMotor();
-  void disableLeftRearMotor();
-  void enableRightRearMotor();
-  void disableRightRearMotor();
+  void enableFrontLeftMotor();
+  void disableFrontLeftMotor();
+  void enableFrontRightMotor();
+  void disableFrontRightMotor();
+  void enableRearLeftMotor();
+  void disableRearLeftMotor();
+  void enableRearRightMotor();
+  void disableRearRightMotor();
 
 private:
   Adafruit_MCP4728 dac;
 
   // Motor pins
-  const int leftFrontDirPin = 30;
-  const int rightFrontDirPin = 32;
-  const int leftRearDirPin = 36;
-  const int rightRearDirPin = 34;
+  const int frontLeftDirPin = 30;
+  const int frontRightDirPin = 32;
+  const int rearLeftDirPin = 36;
+  const int rearRightDirPin = 34;
 
-  const int leftFrontEnablePin = 42;
-  const int rightFrontEnablePin = 44;
-  const int leftRearEnablePin = 48;
-  const int rightRearEnablePin = 46;
+  const int frontLeftEnablePin = 42;
+  const int frontRightEnablePin = 44;
+  const int rearLeftEnablePin = 48;
+  const int rearRightEnablePin = 46;
 
   // Motor power values
   float frontLeftPower = 0, frontRightPower = 0, rearLeftPower = 0, rearRightPower = 0;
@@ -82,7 +82,6 @@ private:
 
   // Calculate motor powers based on joystick inputs
   void calculateMotorPowers(float x, float y, float turn);
-
 };
 
 #endif // MECANUMDRIVE_H

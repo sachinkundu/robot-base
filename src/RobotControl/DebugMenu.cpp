@@ -77,10 +77,10 @@ void motorControlSubmenu(MecanumDrive &drive) {
           Serial.print(F("Stopping previously active motor: "));
           Serial.println(activeMotor);
           switch (activeMotor) {
-            case '1': drive.disableLeftFrontMotor(); break;
-            case '2': drive.disableRightFrontMotor(); break;
-            case '3': drive.disableLeftRearMotor(); break;
-            case '4': drive.disableRightRearMotor(); break;
+            case '1': drive.disableFrontLeftMotor(); break;
+            case '2': drive.disableFrontRightMotor(); break;
+            case '3': drive.disableRearLeftMotor(); break;
+            case '4': drive.disableRearRightMotor(); break;
           }
         }
 
@@ -89,10 +89,10 @@ void motorControlSubmenu(MecanumDrive &drive) {
 
         // Enable and set RPM for the selected motor
         switch (motorSelection) {
-          case '1': drive.enableLeftFrontMotor(); drive.setMotorRPM("leftFront", rpm, !forward); break;
-          case '2': drive.enableRightFrontMotor(); drive.setMotorRPM("rightFront", rpm, forward); break;
-          case '3': drive.enableLeftRearMotor(); drive.setMotorRPM("leftRear", rpm, !forward); break;
-          case '4': drive.enableRightRearMotor(); drive.setMotorRPM("rightRear", rpm, forward); break;
+          case '1': drive.enableFrontLeftMotor(); drive.setMotorRPM("frontLeft", rpm, !forward); break;
+          case '2': drive.enableFrontRightMotor(); drive.setMotorRPM("frontRight", rpm, forward); break;
+          case '3': drive.enableRearLeftMotor(); drive.setMotorRPM("rearLeft", rpm, !forward); break;
+          case '4': drive.enableRearRightMotor(); drive.setMotorRPM("rearRight", rpm, forward); break;
         }
         break;
       }
@@ -173,14 +173,14 @@ void enterDebugMode(MecanumDrive &drive, XboxController &xbox) {
 
       if (debugCommand == 's') {
         Serial.println(F("System Status:"));
-        Serial.print(F("LF: "));
-        Serial.print(drive.getLeftFront(), 2);
-        Serial.print(F("\tRF: "));
-        Serial.print(drive.getRightFront(), 2);
-        Serial.print(F("\tLR: "));
-        Serial.print(drive.getLeftRear(), 2);
-        Serial.print(F("\tRR: "));
-        Serial.println(drive.getRightRear(), 2);
+        Serial.print(F("Front Left: "));
+        Serial.print(drive.getFrontLeft(), 2);
+        Serial.print(F("\tFront Right: "));
+        Serial.print(drive.getFrontRight(), 2);
+        Serial.print(F("\tRear Left: "));
+        Serial.print(drive.getRearLeft(), 2);
+        Serial.print(F("\tRear Right: "));
+        Serial.println(drive.getRearRight(), 2);
       }
 
       if (debugCommand == 'm') {
@@ -194,5 +194,4 @@ void enterDebugMode(MecanumDrive &drive, XboxController &xbox) {
       // Other debug commands...
     }
   }
-
 }
