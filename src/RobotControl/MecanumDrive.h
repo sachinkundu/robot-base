@@ -84,6 +84,7 @@ private:
   void calculateMotorPowers(float x, float y, float turn);
 
   float MecanumDrive::applyRamp(float input);
+  void MecanumDrive::snapToCardinalDirection(float &x, float &y);
 
 };
 

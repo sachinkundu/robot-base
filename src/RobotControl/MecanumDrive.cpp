@@ -93,6 +93,8 @@ void MecanumDrive::disableRearRightMotor() {
 
 // Calculate motor powers and set motor directions and DAC outputs
 void MecanumDrive::move(float x, float y, float turn) {
+  snapToCardinalDirection(x, y);
+
   // Apply ramp scaling to joystick inputs
   x = applyRamp(x);
   y = applyRamp(y);
@@ -118,6 +120,44 @@ float MecanumDrive::applyRamp(float input) {
 
   // Preserve the sign of the input
   return (input >= 0 ? 1 : -1) * pow(abs(input), rampFactor);
+}
+
+// Snap joystick input to cardinal or diagonal directions
+void MecanumDrive::snapToCardinalDirection(float &x, float &y) {
+  // Calculate the angle of the joystick input
+  float angle = atan2(y, x) * 180 / PI; // Convert radians to degrees
+
+  // Normalize the angle to the range [0, 360)
+  if (angle < 0) {
+    angle += 360;
+  }
+
+  // Snap to the nearest cardinal or diagonal direction
+  if (angle >= 22.5 && angle < 67.5) { // Northeast
+    x = 1;
+    y = 1;
+  } else if (angle >= 67.5 && angle < 112.5) { // North
+    x = 0;
+    y = 1;
+  } else if (angle >= 112.5 && angle < 157.5) { // Northwest
+    x = -1;
+    y = 1;
+  } else if (angle >= 157.5 && angle < 202.5) { // West
+    x = -1;
+    y = 0;
+  } else if (angle >= 202.5 && angle < 247.5) { // Southwest
+    x = -1;
+    y = -1;
+  } else if (angle >= 247.5 && angle < 292.5) { // South
+    x = 0;
+    y = -1;
+  } else if (angle >= 292.5 && angle < 337.5) { // Southeast
+    x = 1;
+    y = -1;
+  } else { // East
+    x = 1;
+    y = 0;
+  }
 }
 
 // Getter methods for motor power values
